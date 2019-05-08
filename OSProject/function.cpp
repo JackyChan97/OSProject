@@ -1,104 +1,13 @@
-/**
-* 参与编写人员
-* @ 矢小北
-*
-* 任务：建立基于内存的文件系统
-* 目的：深入了解文件系统结构
-* 要求：首先分配一定容量的内存，建立虚拟磁盘；
-*	在该磁盘上建立相应的文件文件系统；
-*	为该文件系统设计相应的数据结构来管理目录，虚拟磁盘的空闲空间，已分配空间等；
-*	提供文件的创建、删除、移位、改名等功能；
-*	提供良好的界面，可以显示磁盘文件的状态和空间的使用情况；
-*	提供虚拟磁盘转储功能，可将信息存入磁盘，还可从磁盘读入内存。
-*
-*  完成于2016-12-23
-*/
-
-
 #include<iostream>
 #include<iomanip>
 #include<string>
 #include<conio.h>
-//#include<stdio.h>
 #include<cstring>
+#include<cstdio>
 
 #include"define.h"
+
 using namespace std;
-//#define NUM 256	//总节点数      1024
-//#define BNUM 1000	//磁盘块数  15M
-//#define BSIZE 512 //块大小	           1024
-//#define FSIZE 2048	//超级块大小	     
-//#define SSIZE 1046528 //存储空间大小
-//#define NAMESIZE 16	//文件名长度
-//#define DIRSIZE 16	//目录大小
-//#define DIRNUM 32	//目录个数
-//#define FREEBYTE 1021888 //空间总大小
-//#define DIRMODE 0 //目录类型
-//#define FILEMODE 1	//文件类型
-//
-//// 返回状态
-//enum STATUS
-//{
-//	SUCCESS, ERR_PATH_FAIL, ERR_FILE_EXIST, ERR_FILE_NOT_EXIST, ERR_FILE_FAIL
-//};
-//// 超级块
-//struct superblock
-//{
-//	unsigned int s_size;	//总大小
-//	unsigned int s_itsize;	//inode表大小
-//	unsigned int s_freeinodesize;	//空闲i节点的数量
-//	unsigned int s_nextfreeinode;	//下一个空闲i节点
-//	unsigned int s_freeinode[NUM];	//空闲i节点数组 0/1
-//	unsigned int s_freeblocksize;	//空闲块的数量          
-//	unsigned int s_nextfreeblock;	//下一个空闲块
-//	unsigned char s_freeblock[BNUM];	//空闲块数组0/1  
-//};
-//
-////一次间接寻址
-//struct atime
-//{
-//	int fi_addr[128];
-//};
-////二次间接寻址
-//struct mtime
-//{
-//	struct atime* atime_addr[128];
-//};
-//
-//// 文件节点
-//struct finode
-//{
-//	int fi_mode;	//类型：文件/目录
-//	int fi_nlink;		//链接数，当链接数为0，意味着被删除
-//	int dir_no;		//目录号   如果是目录的话
-//	long int fi_size;	//文件大小
-//	long int fi_addr[10];	//文件块一级指针，并未实现多级指针
-//	struct atime  *fi_atime_unused;	//二级寻址
-//	struct mtime  *fi_mtime_unused;	//多级寻址
-//	
-//};
-//
-////目录项结构
-//struct direct
-//{
-//	char d_name[NAMESIZE];        //文件或者目录的名字
-//	unsigned short d_ino;        //文件或者目录的i节点号
-//};
-////目录结构
-//struct dire
-//{
-//	struct direct direct[DIRSIZE];    //包含的目录项数组
-//	unsigned short size;        //包含的目录项大小
-//};
-//
-//// 磁盘
-//struct storage
-//{
-//	struct superblock root;
-//	struct finode fnode[NUM];
-//	struct dire dir[DIRNUM];
-//	char free[FREEBYTE];
-//};
 
 //全局磁盘变量
 struct storage *root = new storage;
@@ -107,6 +16,7 @@ char PATH[NAMESIZE*DIRNUM] = "";
 
 char content[BSIZE*BNUM] = "";
 // 根据路径名获取finode节点号
+
 int getnode(char *path)
 {
 	if (path[0] != '/')
@@ -154,6 +64,7 @@ int getnode(char *path)
 	}
 	return -1;	//错误
 }
+
 // 在指定目录下创建文件
 STATUS touch(char *path, char* fname)
 {
@@ -535,134 +446,4 @@ void init()
 	root->dir[1].size = 1;
 	root->root.s_freeblocksize = BNUM;
 	strcpy(PATH, "/C");
-}
-int  menu()
-{
-	cout << "*****************************************************************************" << endl;
-	cout << "*                             文件系统操作手册                               *" << endl;
-	cout << "*                                                                            *" << endl;
-	cout << "*                  1、 mkdir <dir>  --创建目录                               *" << endl;
-	cout << "*                  2、 touch <file>  --创建文件                              *" << endl;
-	cout << "*                  3、 cat <file>  --读取文件                                *" << endl;
-	cout << "*                  4、 vi <file>   --编辑文件                                *" << endl;
-	cout << "*                  5、 rm <file>  --删除目录/文件                            *" << endl;
-	cout << "*                  6、 rename <src> <dest>  --重命名                         *" << endl;
-	cout << "*                  7、 mv <file> <dir>  --移动文件                           *" << endl;
-	cout << "*                  8、 cd <dir>  --打开目录                                  *" << endl;
-	cout << "*                  9、 cd ..  --返回上一级目录                               *" << endl;
-	cout << "*                  10、pwd  --查看当前路径                                   *" << endl;
-	cout << "*                  11、ls  --列现当前目录                                    *" << endl;
-	cout << "*                  12、free  --显示磁盘可用空间                              *" << endl;
-	cout << "*                  13、writeout  --写入到磁盘                                *" << endl;
-	cout << "*                  14、readin  --从磁盘读取文件系统                          *" << endl;
-	cout << "*                  15、format  --格式化磁盘                                  *" << endl;
-	cout << "*                  16、help  --显示帮助信息                                  *" << endl;
-	cout << "*                  17、exit  --退出文件系统                                  *" << endl;
-	cout << "******************************************************************************" << endl;
-	return 0;
-}
-
-
-
-int main()
-{
-	menu();
-	string s;
-	char arg1[NAMESIZE] = "";
-	char arg2[NAMESIZE] = "";
-	
-	init();
-	while (1)
-	{
-		cin >> s;
-		if (s == "mkdir")
-		{
-			//cout << "mkdir";
-			cin >> arg1;
-			mkdir(PATH, arg1);
-			ls(PATH);
-
-		}
-		else if (s == "format")
-		{
-			memset(root, '\0', sizeof(struct storage));
-			init();
-		}
-		else if (s == "touch")
-		{
-			cin >> arg1;
-			touch(PATH, arg1);
-			//ls(PATH);
-		}
-		else if (s == "rm")
-		{
-			cin >> arg1;
-			rm(PATH, arg1);
-			//ls(PATH);
-		}
-		else if (s == "mv")
-		{
-			cin >> arg1 >> arg2;
-			mv(PATH, arg1, arg2);
-			//ls(PATH);
-		}
-		else if (s == "rename")
-		{
-			cin >> arg1 >> arg2;
-			rename(PATH, arg1, arg2);
-			//ls(PATH);
-		}
-		else if (s == "cat")
-		{
-			cin >> arg1;
-			cat(PATH, arg1);
-			//ls(PATH);
-		}
-		else if (s == "vi")
-		{
-			cin >> arg1;
-			cout << endl << "请输入要写入文件的内容：" << endl;
-			cin >> content;
-			vi(PATH, arg1, content);
-			//ls(PATH);
-		}
-		else if (s == "cd")
-		{
-			cin >> arg1;
-			cd(arg1);
-			//ls(PATH);
-		}
-		else if (s == "pwd")
-		{
-			cout << PATH << endl;
-		}
-		else if (s == "ls")
-		{
-			ls(PATH);
-		}
-		else if (s == "writeout")
-		{
-			writeout();
-			cout << "已写出到 filesystem.dat" << endl;
-			// 写出到 filesystem.dat
-		}
-		else if (s == "readin")
-		{
-			readin();
-			cout << "已从 filesystem.dat 中读入文件系统" << endl;
-		}
-		else if (s == "exit")
-		{
-			break;
-		}
-		else if (s == "free")
-		{
-			free();
-		}
-		else
-		{
-			cout << "命令错误，请重新输入！" << endl;
-		}
-	}
-	return 0;
 }
