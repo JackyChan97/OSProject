@@ -1,51 +1,8 @@
-#include "util.cpp"
+#pragma   once  
+
+#include "util.h"
 // 根据路径名获取finode节点号
-int getnode(char *path)
-{
-	if (path[0] != '/')
-	{
-		return -1;	//路径非法
-	}
-	else
-	{
-		struct dire cdir = root->dir[0];
-		int ino = 0;
-		char tpath[NAMESIZE*DIRNUM] = "";
-		strcpy(tpath, path);
-		char *fpath = strtok(tpath, "/");
-		//cout << fpath << endl;
-		int match = 0;
-		while (fpath != NULL)
-		{
-			match = 0;
-			//cout << fpath<<endl;
-			for (int i = 0; i < DIRNUM; i++)
-			{
-				if (!strncmp(fpath, cdir.direct[i].d_name, strlen(fpath)))
-				{
 
-					//cout << cdir.direct[i].d_name << endl;
-					if (root->fnode[cdir.direct[i].d_ino].fi_mode == DIRMODE)
-					{
-						ino = cdir.direct[i].d_ino;
-						cdir = root->dir[root->fnode[ino].dir_no];
-
-						match = 1;
-						break;
-					}
-					else
-					{
-						return -1;	//是文件，而非文件名
-					}
-				}
-
-			}
-			fpath = strtok(NULL, "/");
-		}
-		return ino;	//为根节点“/”
-	}
-	return -1;	//错误
-}
 
 // 在指定目录下创建文件
 STATUS touch(char *path, char* fname)
@@ -195,9 +152,10 @@ STATUS cd(char *topath)
 	if (!strcmp(topath, ".."))
 	{
 		//
-		int len;
+		int len=1;
 		//cout << strlen(PATH);
-		for (int i = strlen(PATH); i >= 0; i--)
+
+		for (int i = strlen(PATH)-1; i > 0; i--)
 		{
 			if (PATH[i] == '/')
 			{
@@ -206,25 +164,49 @@ STATUS cd(char *topath)
 			}
 			//cout << len;
 		}
-
+		
 		strncpy(path, PATH, len);
 		strcpy(PATH, path);
 	}
 	// 进入目录
 	else
 	{
-		strcpy(path, PATH);
-		strcat(path, "/");
-		strcat(path, topath);
-		if (getnode(path) == -1 || getnode(path) == 0)
-			cout << "Error: the input dir is error, enter faile" << endl;
+		// if(check_path_exist(topath)){
+		// 	strcpy(path, PATH);
+		// 	strcat(path, "/");
+		// 	strcat(path, topath);
+		// 	if (getnode(path) == -1 || getnode(path) == 0)
+		// 		cout << "Error: the input dir is error, enter faile" << endl;
+		// 	else
+		// 	{
+		// 		strcpy(PATH, path);
+		// 	}
+		int e = check_path_exist(topath);
+		if(e==-1){
+			cout<<"Error: the input dir path is error"<<endl;
+			return ERR_PATH_FAIL;
+		}
 		else
 		{
-			strcpy(PATH, path);
+			if(topath[0]=='/'){
+				strcpy(PATH,topath);
+			}
+			else{
+				if(strcmp(PATH,"/")){
+					strcat(PATH,"/");
+					strcat(PATH,topath);
+				}
+				else
+				{
+					strcat(PATH,topath);
+				}
+							
+			}
 		}
+		
 
 		//cout << path;
-
+		
 	}
 	//cout << p;
 	return SUCCESS;
@@ -483,11 +465,11 @@ void init()
 	memset(root->fnode, '\0', FREEBYTE);
 	root->dir[0].direct[0].d_ino = 0;
 	root->dir[0].size = 1;
-	strcpy(root->dir[0].direct[0].d_name, "C"); //设置根目录名
+	strcpy(root->dir[0].direct[0].d_name, "/"); //设置根目录名
 	root->fnode[0].fi_mode = DIRMODE;
 	root->fnode[0].fi_nlink = 1;
-	root->fnode[0].dir_no = 1;
+	root->fnode[0].dir_no = 1;//1
 	root->dir[1].size = 1;
 	root->root.s_freeblocksize = BNUM;
-	strcpy(PATH, "/C");
+	strcpy(PATH, "/");
 }

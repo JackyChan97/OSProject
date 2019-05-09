@@ -1,3 +1,4 @@
+#pragma once
 #define NUM 15360	//总节点数      15*1024
 #define BNUM 15360	//磁盘块数  15M
 #define BSIZE 1024 //块大小	           1024
@@ -63,7 +64,9 @@ struct storage
 	char blank[4792];
 	char free[SSIZE];
 };
-
+extern struct storage *root;
+extern char PATH[NAMESIZE*DIRNUM];
+extern char content[BSIZE*BNUM] ;
 //superblock [0,30]
 // finode[31,930]
 // dir[931,1023]

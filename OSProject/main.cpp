@@ -1,4 +1,12 @@
-#include"function.cpp"
+
+
+#include"function.h"
+
+
+storage*root = new storage;
+// 
+char PATH[NAMESIZE*DIRNUM]="";
+char content[BSIZE*BNUM]="";
 
 void menu()
 {
@@ -36,9 +44,6 @@ void menu()
 
 int main()
 {
-
-
-	
 	menu();
 	string s;
 	char arg1[NAMESIZE] = "";
