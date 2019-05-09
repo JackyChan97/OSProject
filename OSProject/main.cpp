@@ -2,15 +2,15 @@
 
 void menu()
 {
-	cout << "******************************************************************************" << endl;
-	cout << "*                   information of our groups                                *" << endl;
+	cout << "*****************************************************************************" << endl;
+	cout << "*                   information of our groups                               *" << endl;
 	cout << "*                 Zheng BinXiong : 201630588474                             *" << endl;
 	cout << "*                 Chen ZhuoJie   : 201630588474                             *" << endl;
-	cout << "*                 Ye RuiZhi      : 201630588474                             *" << endl; 
-	cout << "******************************************************************************" << endl;
-	cout << "******************************************************************************" << endl;
-	cout << "*                             OS-Operation Guide                             *" << endl;
-	cout << "*                                                                            *" << endl;
+	cout << "*                 Ye RuiZhi      : 201630588450                             *" << endl; 
+	cout << "*****************************************************************************" << endl;
+	cout << "*****************************************************************************" << endl;
+	cout << "*                             OS-Operation Guide                            *" << endl;
+	cout << "*                                                                           *" << endl;
 	cout << "*                  1. mkdir <dir>  --create dir                             *" << endl;
 	cout << "*                  2. touch <file>  --create file                           *" << endl;
 	cout << "*                  3. cat <file>  --read file                               *" << endl;
@@ -28,7 +28,8 @@ void menu()
 	cout << "*                  15.format  --format the disk                             *" << endl;
 	cout << "*                  16.help  --show help information                         *" << endl;
 	cout << "*                  17.exit  --exit the os                                   *" << endl;
-	cout << "******************************************************************************" << endl;
+	cout << "*                  18. createFile                                           *" << endl;
+	cout << "*****************************************************************************" << endl;
 }
 
 
@@ -61,7 +62,7 @@ int main()
 		{
 			int fsize;
 			cin >> arg1 >> fsize;
-			 
+			createFile(PATH, arg1, fsize); 
 		}
 		else if (s == "touch")
 		{

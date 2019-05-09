@@ -66,3 +66,5 @@ struct storage
 	struct dire dir[DIRNUM];
 	char free[FREEBYTE];
 };
+
+

@@ -1,21 +1,4 @@
-#include<iostream>
-#include<iomanip>
-#include<string>
-#include<conio.h>
-#include<cstring>
-#include<cstdio>
-
-#include"define.h"
-
-using namespace std;
-
-//全局磁盘变量
-struct storage *root = new storage;
-// 全局路径
-char PATH[NAMESIZE*DIRNUM] = "";
-
-char content[BSIZE*BNUM] = "";
-// 根据路径名获取finode节点号
+#include "util.cpp"
 
 int getnode(char *path)
 {
@@ -59,7 +42,6 @@ int getnode(char *path)
 			}
 			fpath = strtok(NULL, "/");
 		}
-
 		return ino;	//为根节点“/”
 	}
 	return -1;	//错误
@@ -103,11 +85,11 @@ STATUS createFile(char *path, char* fname, int fsize)
 		cout << "Error: file size can not small than zero" << endl;
 		return ERR_FILE_SIZE;
 	}
-	if( fsize > 100 ){
-		cout << "Error: file size is too large" << endl;
+	if( fsize > 266 ){ // 256+10
+ 		cout << "Error: file size is too large" << endl;
 		return ERR_FILE_SIZE; 
 	}
-	
+	fsize = fsize*1024;
 	int ino = getnode(path);
 	if (ino == -1)
 	{
@@ -115,6 +97,7 @@ STATUS createFile(char *path, char* fname, int fsize)
 	}
 	int n_ino;
 	for (int i = 0; i < NUM; i++)
+	{
 		if (root->fnode[i].fi_nlink != 1)
 		{
 			n_ino = i;
@@ -124,12 +107,44 @@ STATUS createFile(char *path, char* fname, int fsize)
 			root->fnode[i].fi_nlink = 1;
 			break;
 		}
+	}	
 	for (int i = 0; i < DIRSIZE; i++)
 	{
 		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
 		{
 			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
 			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);
+			break;
+		}
+	}
+	
+	for (int i = 0; i < DIRSIZE; i++)
+	{
+		if (strcmp(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname) == 0)
+		{
+			root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size = fsize;
+			// 确定有多少块
+			for (int j = 0; j < 1 + fsize/BSIZE; j++)
+			{
+				// 寻找空闲块
+				for (int k = 0; k < BNUM; k++)
+				{
+					if (root->root.s_freeblock[k] != 1)
+					{
+						// 写入空间块
+						int l, m;
+						root->root.s_freeblock[k] = 1;
+						root->root.s_freeblocksize--;
+						root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] = k;
+						for (l = k * BSIZE, m = j * BSIZE; l < k*BSIZE + BSIZE; m++, l++)
+						{
+							char tmp = 'A' ; // random fill
+							root->free[l] = tmp;
+						}
+						break;
+					}
+				}
+			}
 			break;
 		}
 	}
@@ -358,22 +373,23 @@ STATUS cat(char *path, char *file)
 	int ino = getnode(path);
 	for (int i = 0; i < DIRSIZE; i++)
 	{
-		if (strcmp(root->dir[root->fnode[ino].dir_no].direct[i].d_name, file) == 0)
+		if (strcmp( get_file_name(ino, i), file) == 0)
 		{
-			if (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_mode == DIRMODE)
+			if ( get_file_mode(ino, i) == DIRMODE)
 			{
 				cout << "This is a dir" << endl;
 			}
 			else
 			{
 				// 确定有多少块
-				for (int j = 0; j < 1 + root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE; j++)
+				int bNum = 1 +  get_file_size(ino, i) / BSIZE ;
+				for (int j = 0; j < bNum; j++)
 				{
-					//cout << (BSIZE *root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j]) << endl;
-					//cout << ((root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] * BSIZE) + (
-					//	j>(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) ? BSIZE :
-					//	(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size%BSIZE)));
-					//cout << (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) << endl;;
+//					cout << (BSIZE *root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j]) << endl;
+//					cout << ((root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] * BSIZE) + (
+//						j>(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) ? BSIZE :
+//						(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size%BSIZE)));
+//					cout << (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) << endl;;
 					for (int k = (BSIZE *root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j]);
 						k < ((root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] * BSIZE) +
 						(j > (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) ? BSIZE :
@@ -404,7 +420,6 @@ STATUS vi(char *path, char *file, char *cont)
 			}
 			else
 			{
-
 				root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size = strlen(cont);
 				// 确定有多少块
 				for (int j = 0; j < 1 + strlen(cont) / BSIZE; j++)
@@ -432,7 +447,6 @@ STATUS vi(char *path, char *file, char *cont)
 			}
 			break;
 		}
-
 	}
 	return SUCCESS;
 }
