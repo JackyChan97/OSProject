@@ -4,30 +4,30 @@ void menu()
 {
 	cout << "******************************************************************************" << endl;
 	cout << "*                   information of our groups                                *" << endl;
-	cout << "*                     郑滨雄 ： 201630588474                                 *" << endl;
-	cout << "*                     陈卓杰 ： 201630588474                                 *" << endl;
-	cout << "*                     叶锐智 ： 201630588474                                 *" << endl; 
+	cout << "*                 Zheng BinXiong ： 201630588474                             *" << endl;
+	cout << "*                 Chen ZhuoJie   ： 201630588474                             *" << endl;
+	cout << "*                 Ye RuiZhi      ： 201630588474                             *" << endl; 
 	cout << "******************************************************************************" << endl;
 	cout << "******************************************************************************" << endl;
-	cout << "*                             文件系统操作手册                               *" << endl;
+	cout << "*                             OS-Operation Guide                             *" << endl;
 	cout << "*                                                                            *" << endl;
-	cout << "*                  1、 mkdir <dir>  --创建目录                               *" << endl;
-	cout << "*                  2、 touch <file>  --创建文件                              *" << endl;
-	cout << "*                  3、 cat <file>  --读取文件                                *" << endl;
-	cout << "*                  4、 vi <file>   --编辑文件                                *" << endl;
-	cout << "*                  5、 rm <file>  --删除目录/文件                            *" << endl;
-	cout << "*                  6、 rename <src> <dest>  --重命名                         *" << endl;
-	cout << "*                  7、 mv <file> <dir>  --移动文件                           *" << endl;
-	cout << "*                  8、 cd <dir>  --打开目录                                  *" << endl;
-	cout << "*                  9、 cd ..  --返回上一级目录                               *" << endl;
-	cout << "*                  10、pwd  --查看当前路径                                   *" << endl;
-	cout << "*                  11、ls  --列现当前目录                                    *" << endl;
-	cout << "*                  12、free  --显示磁盘可用空间                              *" << endl;
-	cout << "*                  13、writeout  --写入到磁盘                                *" << endl;
-	cout << "*                  14、readin  --从磁盘读取文件系统                          *" << endl;
-	cout << "*                  15、format  --格式化磁盘                                  *" << endl;
-	cout << "*                  16、help  --显示帮助信息                                  *" << endl;
-	cout << "*                  17、exit  --退出文件系统                                  *" << endl;
+	cout << "*                  1、 mkdir <dir>  --create dir                             *" << endl;
+	cout << "*                  2、 touch <file>  --create file                           *" << endl;
+	cout << "*                  3、 cat <file>  --read file                               *" << endl;
+	cout << "*                  4、 vi <file>   --edit file                               *" << endl;
+	cout << "*                  5、 rm <file>  --delete dir/file                          *" << endl;
+	cout << "*                  6、 rename <src> <dest>  --rename                         *" << endl;
+	cout << "*                  7、 mv <file> <dir>  --move dir/file                      *" << endl;
+	cout << "*                  8、 cd <dir>  --enter dir                                 *" << endl;
+	cout << "*                  9、 cd ..  --return parent's dir                          *" << endl;
+	cout << "*                  10、pwd  --show present path                              *" << endl;
+	cout << "*                  11、ls  --list present dir's file                         *" << endl;
+	cout << "*                  12、free  --show free space of disk                       *" << endl;
+	cout << "*                  13、writeout  --write to disk                             *" << endl;
+	cout << "*                  14、readin  --read os from disk                           *" << endl;
+	cout << "*                  15、format  --format the disk                             *" << endl;
+	cout << "*                  16、help  --show help information                         *" << endl;
+	cout << "*                  17、exit  --exit the os                                   *" << endl;
 	cout << "******************************************************************************" << endl;
 }
 
@@ -56,6 +56,12 @@ int main()
 		{
 			memset(root, '\0', sizeof(struct storage));
 			init();
+		}
+		else if (s == "createFile")
+		{
+			int fsize;
+			cin >> arg1 >> fsize;
+			 
 		}
 		else if (s == "touch")
 		{
@@ -90,7 +96,7 @@ int main()
 		else if (s == "vi")
 		{
 			cin >> arg1;
-			cout << endl << "请输入要写入文件的内容：" << endl;
+			cout << endl << "Please input the content of the file:" << endl;
 			cin >> content;
 			vi(PATH, arg1, content);
 			//ls(PATH);
@@ -112,13 +118,12 @@ int main()
 		else if (s == "writeout")
 		{
 			writeout();
-			cout << "已写出到 filesystem.dat" << endl;
-			// 写出到 filesystem.dat
+			cout << "success write to filesystem.dat" << endl;
 		}
 		else if (s == "readin")
 		{
 			readin();
-			cout << "已从 filesystem.dat 中读入文件系统" << endl;
+			cout << "success read os from filesystem.dat" << endl;
 		}
 		else if (s == "exit")
 		{
@@ -130,7 +135,7 @@ int main()
 		}
 		else
 		{
-			cout << "命令错误，请重新输入！" << endl;
+			cout << "order is no exit! Please try again!" << endl;
 		}
 	}
 	return 0;

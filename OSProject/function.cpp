@@ -96,6 +96,46 @@ STATUS touch(char *path, char* fname)
 	return SUCCESS;
 }
 
+// 在指定目录下创建文件
+STATUS createFile(char *path, char* fname, int fsize)
+{
+	if( fsize < 0 ){
+		cout << "Error: file size can not small than zero" << endl;
+		return ERR_FILE_SIZE;
+	}
+	if( fsize > 100 ){
+		cout << "Error: file size is too large" << endl;
+		return ERR_FILE_SIZE; 
+	}
+	
+	int ino = getnode(path);
+	if (ino == -1)
+	{
+		return ERR_PATH_FAIL;
+	}
+	int n_ino;
+	for (int i = 0; i < NUM; i++)
+		if (root->fnode[i].fi_nlink != 1)
+		{
+			n_ino = i;
+			root->fnode[i].fi_mode = FILEMODE;
+			root->fnode[i].fi_size = 0;
+			root->fnode[i].fi_addr[0] = 0;
+			root->fnode[i].fi_nlink = 1;
+			break;
+		}
+	for (int i = 0; i < DIRSIZE; i++)
+	{
+		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
+		{
+			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
+			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);
+			break;
+		}
+	}
+	return SUCCESS;
+}
+
 // 创建目录
 STATUS mkdir(char *path, char* pname)
 {
@@ -172,7 +212,7 @@ STATUS cd(char *topath)
 		strcat(path, "/");
 		strcat(path, topath);
 		if (getnode(path) == -1 || getnode(path) == 0)
-			cout << "目录输入错误，进入失败" << endl;
+			cout << "Error: the input dir is error, enter faile" << endl;
 		else
 		{
 			strcpy(PATH, path);
@@ -222,7 +262,7 @@ STATUS rename(char *path, char *cname, char *nname)
 			{
 				if (strcmp(root->dir[root->fnode[ino].dir_no].direct[j].d_name, nname) == 0)
 				{
-					cout << "文件名重复" << endl;
+					cout << "Error: file name repeat" << endl;
 					return ERR_FILE_EXIST;
 				}
 			}
@@ -279,7 +319,7 @@ int rm(char *path, char *file)
 		}
 		else
 		{
-			cout << "文件不存在" << endl;
+			cout << "Error: file is not exit" << endl;
 			return ERR_FILE_NOT_EXIST;
 		}
 	}
@@ -322,7 +362,7 @@ STATUS cat(char *path, char *file)
 		{
 			if (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_mode == DIRMODE)
 			{
-				cout << "这是一个目录" << endl;
+				cout << "This is a dir" << endl;
 			}
 			else
 			{
@@ -360,7 +400,7 @@ STATUS vi(char *path, char *file, char *cont)
 		{
 			if (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_mode == DIRMODE)
 			{
-				cout << "这是一个目录" << endl;
+				cout << "This is a dir" << endl;
 			}
 			else
 			{
@@ -401,15 +441,15 @@ STATUS vi(char *path, char *file, char *cont)
 STATUS writeout()
 {
 	FILE *fp;
-	if ((fp = fopen("filesystem", "w")) == NULL)
+	if ((fp = fopen("filesystem.dat", "w")) == NULL)
 	{
-		cout << "写出文件失败！" << endl;
+		cout << "Error: fail to write to disk!" << endl;
 		return ERR_FILE_FAIL;
 	}
 
 	if (fwrite(root, sizeof(struct storage), 1, fp) != 1)
 	{
-		cout << "文件写出失败" << endl;
+		cout << "Error: fail to write to disk!" << endl;
 	}
 
 	fclose(fp);
@@ -420,9 +460,9 @@ STATUS readin()
 {
 
 	FILE *fp;
-	if ((fp = fopen("filesystem", "r")) == NULL)
+	if ((fp = fopen("filesystem.dat", "r")) == NULL)
 	{
-		cout << "读入文件失败" << endl;
+		cout << "Error: fail to read os from disk!" << endl;
 		return ERR_FILE_FAIL;
 	}
 	if (fread(root, sizeof(struct storage), 1, fp))
