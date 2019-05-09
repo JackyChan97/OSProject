@@ -30,18 +30,18 @@ int getnode(char *path)
 		char tpath[NAMESIZE*DIRNUM] = "";
 		strcpy(tpath, path);
 		char *fpath = strtok(tpath, "/");
-		cout << fpath << endl;
+		//cout << fpath << endl;
 		int match = 0;
 		while (fpath != NULL)
 		{
 			match = 0;
-			cout << fpath<<endl;
+			//cout << fpath<<endl;
 			for (int i = 0; i < DIRNUM; i++)
 			{
 				if (!strncmp(fpath, cdir.direct[i].d_name, strlen(fpath)))
 				{
 
-					cout << cdir.direct[i].d_name << endl;
+					//cout << cdir.direct[i].d_name << endl;
 					if (root->fnode[cdir.direct[i].d_ino].fi_mode == DIRMODE)
 					{
 						ino = cdir.direct[i].d_ino;
