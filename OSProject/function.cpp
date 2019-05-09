@@ -51,27 +51,22 @@ int getnode(char *path)
 STATUS touch(char *path, char* fname)
 {
 	int ino = getnode(path);
-	if (ino == -1)
-	{
+	if (ino == -1) {
 		return ERR_PATH_FAIL;
 	}
+	
 	int n_ino;
-	for (int i = 0; i < NUM; i++)
-		if (root->fnode[i].fi_nlink != 1)
-		{
+	for (int i = 0; i < NUM; i++){
+		if (root->fnode[i].fi_nlink != 1) {
+			add_new_fnode(i, FILEMODE);
 			n_ino = i;
-			root->fnode[i].fi_mode = FILEMODE;
-			root->fnode[i].fi_size = 0;
-			root->fnode[i].fi_addr[0] = 0;
-			root->fnode[i].fi_nlink = 1;
 			break;
-		}
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
-		{
-			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
-			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);
+		}	
+	}
+		
+	for (int i = 0; i < DIRSIZE; i++) {
+		if (strlen(get_file_name(ino, i)) == 0)	{
+			add_file_to_direct(ino, i, n_ino, fname);
 			break;
 		}
 	}
@@ -91,63 +86,58 @@ STATUS createFile(char *path, char* fname, int fsize)
 	}
 	fsize = fsize*1024;
 	int ino = getnode(path);
-	if (ino == -1)
-	{
+	if (ino == -1) {
 		return ERR_PATH_FAIL;
 	}
+	
 	int n_ino;
-	for (int i = 0; i < NUM; i++)
-	{
-		if (root->fnode[i].fi_nlink != 1)
-		{
+	for (int i = 0; i < NUM; i++){
+		if (root->fnode[i].fi_nlink != 1) {
+			add_new_fnode(i, FILEMODE);
 			n_ino = i;
-			root->fnode[i].fi_mode = FILEMODE;
-			root->fnode[i].fi_size = 0;
-			root->fnode[i].fi_addr[0] = 0;
-			root->fnode[i].fi_nlink = 1;
 			break;
-		}
-	}	
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
-		{
-			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
-			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);
+		}	
+	}
+		
+	int direct_i;
+	for (int i = 0; i < DIRSIZE; i++) {
+		if (strlen(get_file_name(ino, i)) == 0)	{
+			add_file_to_direct(ino, i, n_ino, fname);
+			direct_i = i; 
 			break;
 		}
 	}
 	
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strcmp(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname) == 0)
-		{
-			root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size = fsize;
-			// 确定有多少块
-			for (int j = 0; j < 1 + fsize/BSIZE; j++)
-			{
-				// 寻找空闲块
-				for (int k = 0; k < BNUM; k++)
-				{
-					if (root->root.s_freeblock[k] != 1)
-					{
-						// 写入空间块
-						int l, m;
-						root->root.s_freeblock[k] = 1;
-						root->root.s_freeblocksize--;
-						root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] = k;
-						for (l = k * BSIZE, m = j * BSIZE; l < k*BSIZE + BSIZE; m++, l++)
-						{
-							char tmp = 'A' ; // random fill
-							root->free[l] = tmp;
-						}
-						break;
-					}
-				}
-			}
-			break;
-		}
+	update_file_size(n_ino, fsize);
+	
+	// 确定有多少块
+	int block_num = fsize%BSIZE ? 1 + fsize/BSIZE : fsize/BSIZE;
+	if( block_num >= 10 ){
+		int k = find_free_block();
+		root->fnode[n_ino].double_addr = k;
+		root->root.s_freeblock[k] = 1;
+		root->root.s_freeblocksize--;
 	}
+	
+	for (int j = 0; j < block_num; j++){
+		if( j < 10 ){
+			// 寻找空闲块
+			int k = find_free_block();
+			int l, m;
+			root->root.s_freeblock[k] = 1;
+			root->root.s_freeblocksize--;
+			root->fnode[n_ino].fi_addr[j] = k;
+			for (l = k * BSIZE, m = j * BSIZE; l < k*BSIZE + BSIZE; m++, l++){
+				char tmp = 'A' ; // random fill
+				root->free[l] = tmp;
+			}
+		}
+		else{
+			
+		}
+		
+	}
+
 	return SUCCESS;
 }
 

@@ -1,11 +1,11 @@
-#define NUM 1024	//总节点数      1024
+#define NUM 15360	//总节点数      15*1024
 #define BNUM 15360	//磁盘块数  15M
 #define BSIZE 1024 //块大小	           1024
-#define FSIZE 2048	//超级块大小	     
-#define SSIZE 16756736 //存储空间大小
+//#define FSIZE 2048	//超级块大小	     
+#define SSIZE 15728640 //存储空间大小
 #define NAMESIZE 16	//文件名长度
 #define DIRSIZE 16	//目录大小
-#define DIRNUM 32	//目录个数
+#define DIRNUM 256	//目录个数
 #define FREEBYTE 16681920 //空间总大小
 #define DIRMODE 0 //目录类型
 #define FILEMODE 1	//文件类型
@@ -22,17 +22,12 @@ struct superblock
 	unsigned int s_itsize;	//inode表大小
 	unsigned int s_freeinodesize;	//空闲i节点的数量
 	unsigned int s_nextfreeinode;	//下一个空闲i节点
-	unsigned int s_freeinode[NUM];	//空闲i节点数组 0/1
+	bool s_freeinode[NUM];	//空闲i节点数组 0/1
 	unsigned int s_freeblocksize;	//空闲块的数量          
 	unsigned int s_nextfreeblock;	//下一个空闲块
-	unsigned char s_freeblock[BNUM];	//空闲块数组0/1  
-	char blank[1000];
+	bool s_freeblock[BNUM];	//空闲块数组0/1  
 };
-//一次间接寻址
-struct atime
-{
-	int fi_addr[256];
-};
+
 // 文件节点
 struct finode
 {
@@ -41,9 +36,7 @@ struct finode
 	int dir_no;		//目录号   如果是目录的话
 	long int fi_size;	//文件大小
 	long int fi_addr[10];	//文件块一级指针，并未实现多级指针
-	struct atime  *fi_atime_unused;	//二级寻址
-	char blank[4];
-
+	int double_addr;	//二级寻址
 };
 //目录项结构
 struct direct
@@ -64,7 +57,8 @@ struct storage
 	struct superblock root;
 	struct finode fnode[NUM];
 	struct dire dir[DIRNUM];
-	char free[FREEBYTE];
+	char blank[21992];
+	char free[SSIZE];
 };
 
 
