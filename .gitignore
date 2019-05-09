@@ -2,3 +2,4 @@
 *.exe
 *.dat
 /OSProject/.vs
+/.vscode

@@ -4,9 +4,9 @@ void menu()
 {
 	cout << "******************************************************************************" << endl;
 	cout << "*                   information of our groups                                *" << endl;
-	cout << "*                 Zheng BinXiong £º 201630588474                             *" << endl;
-	cout << "*                 Chen ZhuoJie   £º 201630588474                             *" << endl;
-	cout << "*                 Ye RuiZhi      £º 201630588474                             *" << endl; 
+	cout << "*                 Zheng BinXiong : 201630588474                             *" << endl;
+	cout << "*                 Chen ZhuoJie   : 201630588474                             *" << endl;
+	cout << "*                 Ye RuiZhi      : 201630588474                             *" << endl; 
 	cout << "******************************************************************************" << endl;
 	cout << "******************************************************************************" << endl;
 	cout << "*                             OS-Operation Guide                             *" << endl;
