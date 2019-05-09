@@ -15,7 +15,6 @@ struct storage *root = new storage;
 char PATH[NAMESIZE*DIRNUM] = "";
 
 char content[BSIZE*BNUM] = "";
-// 根据路径名获取finode节点号
 
 char* get_file_name( int ino, int i){
 	return root->dir[root->fnode[ino].dir_no].direct[i].d_name;
@@ -51,6 +50,7 @@ int find_free_block(){
 		if( root->root.s_freeblock[i] != 1 )
 			return i;
 	}
+	return -1;
 }
 
 

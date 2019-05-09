@@ -33,11 +33,11 @@ void menu()
 }
 
 
-storage d ;
+
 int main()
 {
-	
-	cout << "sizeof(d) "<< sizeof(d) << endl;
+
+
 	
 	menu();
 	string s;

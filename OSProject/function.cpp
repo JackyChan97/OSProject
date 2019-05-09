@@ -1,5 +1,5 @@
 #include "util.cpp"
-
+// 根据路径名获取finode节点号
 int getnode(char *path)
 {
 	if (path[0] != '/')

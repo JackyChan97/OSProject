@@ -5,11 +5,12 @@
 #define SSIZE 15728640 //存储空间大小
 #define NAMESIZE 16	//文件名长度
 #define DIRSIZE 16	//目录大小
-#define DIRNUM 256	//目录个数
-#define FREEBYTE 16681920 //空间总大小
+#define DIRNUM 100	//目录个数
+#define FREEBYTE 16746472 //空间总大小
 #define DIRMODE 0 //目录类型
 #define FILEMODE 1	//文件类型
 
+#include<time.h>
 // 返回状态
 enum STATUS
 {
@@ -36,6 +37,7 @@ struct finode
 	int dir_no;		//目录号   如果是目录的话
 	long int fi_size;	//文件大小
 	long int fi_addr[10];	//文件块一级指针，并未实现多级指针
+	time_t createdTime;
 	int double_addr;	//二级寻址
 };
 //目录项结构
@@ -55,10 +57,14 @@ struct dire
 struct storage
 {
 	struct superblock root;
+	char blank0[1000];
 	struct finode fnode[NUM];
 	struct dire dir[DIRNUM];
-	char blank[21992];
+	char blank[4792];
 	char free[SSIZE];
 };
 
-
+//superblock [0,30]
+// finode[31,930]
+// dir[931,1023]
+//free[1024,15*1024-1]
