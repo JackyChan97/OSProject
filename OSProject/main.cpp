@@ -59,7 +59,10 @@ int main()
 			cin >> arg1;
 			mkdir(PATH, arg1);
 			ls(PATH);
-
+		}
+		else if( s == "createDir"){
+			cin >> arg1;
+			create_dir(PATH, arg1);
 		}
 		else if (s == "format")
 		{

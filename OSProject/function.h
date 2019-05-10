@@ -7,7 +7,6 @@
 // 在指定目录下创建文件
 STATUS touch(char *path, char* fname)
 {
-	cout << "fuck" << endl;
 	int ino = getnode(path);
 	if (ino == -1) {
 		return ERR_PATH_FAIL;
@@ -32,6 +31,12 @@ STATUS createFile(char *path, char* fname, int size_kb)
 	}
 	
 	int fsize = block_num*1024;
+	
+	if( fname[0] == '/' ){
+		
+	}
+
+	
 	int ino = getnode(path);
 	if (ino == -1) {
 		return ERR_PATH_FAIL;
@@ -122,7 +127,57 @@ STATUS mkdir(char *path, char* pname)
 	}
 	return SUCCESS;
 }
-// 进入目录回退上一级目录
+
+// 创建目录
+STATUS create_dir(char *path, char* pname)
+{
+	if( pname[0] == '/' ){
+		
+	}
+	int ino = getnode(path);
+	if (ino == -1)
+	{
+		return ERR_PATH_FAIL;
+	}
+	int n_ino;
+	int d_ino ;
+	// 申请新目录
+	for (int i = 0; i < DIRSIZE; i++)
+	{
+		if (root->dir[i].size == 0)
+		{
+			root->dir[i].size = 1;
+			d_ino = i;
+			break;
+			//root->dir[i].direct[0].d_ino = n_ino;
+		}
+	}
+	//申请请finode节点
+	for (int i = 0; i < NUM; i++)
+		if (root->fnode[i].fi_nlink != 1)
+		{
+			n_ino = i;
+			root->fnode[i].fi_mode = DIRMODE;
+			root->fnode[i].fi_size = 0;
+			root->fnode[i].dir_no = d_ino;
+			root->fnode[i].fi_addr[0] = 0;
+			root->fnode[i].fi_nlink = 1;
+			break;
+		}
+	// 在父亲节点建立指针
+	for (int i = 0; i < DIRSIZE; i++)
+	{
+		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
+		{
+			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
+			root->dir[root->fnode[ino].dir_no].size++;
+			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, pname);
+			break;
+		}
+	}
+	return SUCCESS;
+}
+
 STATUS cd(char *topath)
 {
 	char path[NAMESIZE*DIRNUM] = "";
