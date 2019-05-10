@@ -68,9 +68,9 @@ int main()
 		}
 		else if (s == "createFile")
 		{
-			int fsize;
-			cin >> arg1 >> fsize;
-			createFile(PATH, arg1, fsize); 
+			int size_kb;
+			cin >> arg1 >> size_kb;
+			createFile(PATH, arg1, size_kb); 
 		}
 		else if (s == "touch")
 		{

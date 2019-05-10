@@ -11,7 +11,7 @@
 
 using namespace std;
 
-
+// 根据路径名获取finode节点号
 int getnode(char *path)
 {
 	//cout<<"*path:"<<path<<endl;
@@ -77,7 +77,7 @@ int get_file_size(int ino, int i){
 	return root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size;
 }
 
-void add_new_fnode(int i, int mode){
+void init_new_fnode(int i, int mode){
 	root->fnode[i].fi_mode = mode;
 	root->fnode[i].fi_size = 0;
 	root->fnode[i].fi_addr[0] = 0;
@@ -85,9 +85,29 @@ void add_new_fnode(int i, int mode){
 	root->fnode[i].double_addr = -1;
 }
 
-void add_file_to_direct(int ino, int i, int n_ino, char* fname){
+int add_new_fnode(int mode){
+	for (int i = 0; i < NUM; i++){
+		if (root->fnode[i].fi_nlink != 1) {
+			init_new_fnode(i, mode);
+			return i;
+		}	
+	}
+	cout << "no more fnode, please delete something" << endl;
+	return -1;
+}
+
+void init_file_to_direct(int ino, int i, int n_ino, char* fname){
 	root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino ;
 	strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);
+}
+
+int add_file_to_direct( int ino, int n_ino, char* fname){
+	for (int i = 0; i < DIRSIZE; i++) {
+		if (strlen(get_file_name(ino, i)) == 0)	{
+			init_file_to_direct(ino, i, n_ino, fname);
+			return i;
+		}
+	}
 }
 
 void update_file_size(int ino, int fsize){
@@ -99,8 +119,50 @@ int find_free_block(){
 		if( root->root.s_freeblock[i] != 1 )
 			return i;
 	}
+	cout << "the free block is not enogh" << endl;
 	return -1;
 }
+
+int get_double_addr_block_id( int ino ){
+	return root->fnode[ino].double_addr;
+}
+
+void update_addr_in_double_addr_block(int id, int pos, int addr){ 
+	// id is block_addr, pos in addr_block
+	// 3 char as a 24-bits address
+	addr += 1 ;
+	root->free[id*BSIZE+pos*3+2] = addr%2^8;
+	addr = addr/2^8;
+	root->free[id*BSIZE+pos*3+1] = addr%2^8;
+	addr = addr/2^8;
+	root->free[id*BSIZE+pos*3] = addr%2^8;
+}
+
+int get_double_addr_block_addr( int id, int j){
+	int addr = int(root->free[id*BSIZE+j*3]);
+	addr = addr*2^8 + int(root->free[id*BSIZE+j*3+1]);
+	addr = addr*2^8 + int(root->free[id*BSIZE+j*3+2]);
+	return addr-1;
+}
+
+
+int get_file_direct_id_in_fnode( int ino, char *fname){
+	for (int i = 0; i < DIRSIZE; i++)
+	{
+		if (strcmp( get_file_name(ino, i), fname) == 0)
+		{
+			return i;
+		}
+	}
+	cout << "not exist " << fname << " in present direct"<< endl;
+	return -1;
+}
+
+finode get_direct_fnode( int ino, int direct_i){
+	return root->fnode[root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino];
+}
+
+
 // 如果不存在返回-1 否则返回inodenumber
  int check_path_exist(char *topath){
 	 if(topath[0]=='/'){

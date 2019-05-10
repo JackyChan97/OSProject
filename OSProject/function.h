@@ -1,100 +1,77 @@
 #pragma   once  
 
 #include "util.h"
-// 根据路径名获取finode节点号
+ 
 
 
 // 在指定目录下创建文件
 STATUS touch(char *path, char* fname)
 {
+	cout << "fuck" << endl;
 	int ino = getnode(path);
 	if (ino == -1) {
 		return ERR_PATH_FAIL;
 	}
 	
-	int n_ino;
-	for (int i = 0; i < NUM; i++){
-		if (root->fnode[i].fi_nlink != 1) {
-			add_new_fnode(i, FILEMODE);
-			n_ino = i;
-			break;
-		}	
-	}
-		
-	for (int i = 0; i < DIRSIZE; i++) {
-		if (strlen(get_file_name(ino, i)) == 0)	{
-			add_file_to_direct(ino, i, n_ino, fname);
-			break;
-		}
-	}
+	int n_ino = add_new_fnode(FILEMODE);
+	add_file_to_direct(ino, n_ino, fname);
 	return SUCCESS;
 }
 
 // 在指定目录下创建文件
-STATUS createFile(char *path, char* fname, int fsize)
+STATUS createFile(char *path, char* fname, int size_kb)
 {
-	if( fsize < 0 ){
+	cout << "what" << endl;
+	int block_num = size_kb*1024/BSIZE;
+	if( block_num < 0 ){
 		cout << "Error: file size can not small than zero" << endl;
 		return ERR_FILE_SIZE;
 	}
-	if( fsize > 266 ){ // 256+10
+	if( block_num > 266 ){ // 256+10
  		cout << "Error: file size is too large" << endl;
 		return ERR_FILE_SIZE; 
 	}
-	fsize = fsize*1024;
+	
+	int fsize = block_num*1024;
 	int ino = getnode(path);
 	if (ino == -1) {
 		return ERR_PATH_FAIL;
 	}
-	
-	int n_ino;
-	for (int i = 0; i < NUM; i++){
-		if (root->fnode[i].fi_nlink != 1) {
-			add_new_fnode(i, FILEMODE);
-			n_ino = i;
-			break;
-		}	
-	}
+	cout << "what" << endl;
+	int n_ino = add_new_fnode(FILEMODE);
 		
-	int direct_i;
-	for (int i = 0; i < DIRSIZE; i++) {
-		if (strlen(get_file_name(ino, i)) == 0)	{
-			add_file_to_direct(ino, i, n_ino, fname);
-			direct_i = i; 
-			break;
-		}
-	}
-	
+	int direct_i = add_file_to_direct(ino, n_ino, fname);
+
 	update_file_size(n_ino, fsize);
 	
-	// 确定有多少块
-	int block_num = fsize%BSIZE ? 1 + fsize/BSIZE : fsize/BSIZE;
+	int double_addr_block_id;
+	cout << "what" << endl;
 	if( block_num >= 10 ){
 		int k = find_free_block();
 		root->fnode[n_ino].double_addr = k;
+		double_addr_block_id = k;
 		root->root.s_freeblock[k] = 1;
 		root->root.s_freeblocksize--;
+		memset(root->free+k*BSIZE, 0, 1024);
 	}
 	
-	for (int j = 0; j < block_num; j++){
+	for(int j = 0; j < block_num; j++){
+		int k = find_free_block();
+		root->root.s_freeblock[k] = 1;
+		root->root.s_freeblocksize--;
 		if( j < 10 ){
-			// 寻找空闲块
-			int k = find_free_block();
-			int l, m;
-			root->root.s_freeblock[k] = 1;
-			root->root.s_freeblocksize--;
 			root->fnode[n_ino].fi_addr[j] = k;
-			for (l = k * BSIZE, m = j * BSIZE; l < k*BSIZE + BSIZE; m++, l++){
-				char tmp = 'A' ; // random fill
-				root->free[l] = tmp;
-			}
 		}
 		else{
-			
+			update_addr_in_double_addr_block(double_addr_block_id, j-10, k);
 		}
-		
+		int start_addr = k * BSIZE;
+		int end = 1024;
+		cout << "start_addr " << start_addr << endl;
+		for ( int l = 0; l < end; l++){
+			root->free[start_addr+l] = 'a';	// random fill
+		}
 	}
-
 	return SUCCESS;
 }
 
@@ -340,39 +317,36 @@ STATUS free()
 }
 
 //读文件
-STATUS cat(char *path, char *file)
+STATUS cat(char *path, char *fname)
 {
 	int ino = getnode(path);
-	for (int i = 0; i < DIRSIZE; i++)
+	
+	int direct_i = get_file_direct_id_in_fnode(ino, fname);
+	
+	if ( get_file_mode(ino, direct_i) == DIRMODE)
 	{
-		if (strcmp( get_file_name(ino, i), file) == 0)
+		cout << "This is a dir" << endl;
+	}
+	else
+	{
+		// 确定有多少块
+		int fsize = get_file_size(ino, direct_i);
+		int remainder = fsize%BSIZE;
+		int block_num = remainder ? 1 + fsize/BSIZE : fsize/BSIZE;
+		
+		finode now_fnode = get_direct_fnode(ino, direct_i);
+		
+		for (int j = 0; j < block_num; j++)
 		{
-			if ( get_file_mode(ino, i) == DIRMODE)
-			{
-				cout << "This is a dir" << endl;
+			int start_addr;
+			if( j < 10 ) start_addr = BSIZE*now_fnode.fi_addr[j] ;
+			else start_addr = BSIZE*get_double_addr_block_addr(now_fnode.double_addr,j-10);
+			int end = (j == block_num-1) ? remainder : 1024 ;
+			if( end == 0 ) end = 1024;
+			for (int k = 0; k < end; k++){
+				cout << root->free[start_addr+k];
 			}
-			else
-			{
-				// 确定有多少块
-				int bNum = 1 +  get_file_size(ino, i) / BSIZE ;
-				for (int j = 0; j < bNum; j++)
-				{
-//					cout << (BSIZE *root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j]) << endl;
-//					cout << ((root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] * BSIZE) + (
-//						j>(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) ? BSIZE :
-//						(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size%BSIZE)));
-//					cout << (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) << endl;;
-					for (int k = (BSIZE *root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j]);
-						k < ((root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_addr[j] * BSIZE) +
-						(j > (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size / BSIZE) ? BSIZE :
-							(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size%BSIZE))); k++)
-					{
-						//cout << k;
-						cout << root->free[k];
-					}
-				}
-			}
-			break;
+			cout << "j " << j << " start_addr " << start_addr << "  end " << end << endl;
 		}
 	}
 	cout << endl;

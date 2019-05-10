@@ -1,5 +1,6 @@
 
 *.exe
 *.dat
+*.gch
 /OSProject/.vs
 /.vscode
