@@ -17,7 +17,7 @@
 // 返回状态
 enum STATUS
 {
-	SUCCESS, ERR_PATH_FAIL, ERR_FILE_EXIST, ERR_FILE_NOT_EXIST, ERR_FILE_FAIL, ERR_FILE_SIZE, ERR_FNODE_NOT_ENOUGH
+	SUCCESS, ERR, ERR_PATH_FAIL, ERR_FILE_EXIST, ERR_FILE_NOT_EXIST, ERR_FILE_FAIL, ERR_FILE_SIZE, ERR_FNODE_NOT_ENOUGH
 };
 //超级块
 struct superblock
@@ -35,7 +35,7 @@ struct superblock
 // 文件节点
 struct finode
 {
-	int fi_mode;	//类型：文件/目录
+	int fi_mode;	//类型：目录/文件
 	int fi_nlink;		//链接数，当链接数为0，意味着被删除
 	int dir_no;		//目录号   如果是目录的话
 	long int fi_size;	//文件大小

@@ -33,6 +33,11 @@ STATUS createFile(char *path, char* fname, int size_kb)
 		return ERR_FILE_SIZE; 
 	}
 	
+	if( root->root.s_freeinodesize == 0 ){
+		cout << "Error: finode out of range" << endl;
+		return ERR;
+	}
+
 	int fsize = block_num*1024;
 	
 	if( fname[0] == '/' ){
@@ -85,100 +90,97 @@ STATUS createFile(char *path, char* fname, int size_kb)
 }
 
 // 创建目录
-STATUS mkdir(char *path, char* pname)
-{
-	int ino = getnode(path);
-	if (ino == -1)
-	{
-		return ERR_PATH_FAIL;
-	}
-	int n_ino;
-	int d_ino;
-	// 申请新目录
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (root->dir[i].size == 0)
-		{
-			root->dir[i].size = 1;
-			d_ino = i;
-			break;
-			//root->dir[i].direct[0].d_ino = n_ino;
-		}
-	}
-	//申请请finode节点
-	for (int i = 0; i < NUM; i++)
-		if (root->fnode[i].fi_nlink != 1)
-		{
-			n_ino = i;
-			root->fnode[i].fi_mode = DIRMODE;
-			root->fnode[i].fi_size = 0;
-			root->fnode[i].dir_no = d_ino;
-			root->fnode[i].fi_addr[0] = 0;
-			root->fnode[i].fi_nlink = 1;
-			break;
-		}
-	// 在父亲节点建立指针
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
-		{
-			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
-			root->dir[root->fnode[ino].dir_no].size++;
-			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, pname);
-			break;
-		}
-	}
-	return SUCCESS;
-}
+// STATUS mkdir(char *path, char* pname)
+// {
+// 	int ino = getnode(path);
+// 	if (ino == -1)
+// 	{
+// 		return ERR_PATH_FAIL;
+// 	}
+// 	int n_ino;
+// 	int d_ino;
+// 	// 申请新目录
+// 	for (int i = 0; i < DIRSIZE; i++)
+// 	{
+// 		if (root->dir[i].size == 0)
+// 		{
+// 			root->dir[i].size = 1;
+// 			d_ino = i;
+// 			break;
+// 			//root->dir[i].direct[0].d_ino = n_ino;
+// 		}
+// 	}
+// 	//申请请finode节点
+// 	for (int i = 0; i < NUM; i++)
+// 		if (root->fnode[i].fi_nlink != 1)
+// 		{
+// 			n_ino = i;
+// 			root->fnode[i].fi_mode = DIRMODE;
+// 			root->fnode[i].fi_size = 0;
+// 			root->fnode[i].dir_no = d_ino;
+// 			root->fnode[i].fi_addr[0] = 0;
+// 			root->fnode[i].fi_nlink = 1;
+// 			break;
+// 		}
+// 	// 在父亲节点建立指针
+// 	for (int i = 0; i < DIRSIZE; i++)
+// 	{
+// 		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
+// 		{
+// 			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
+// 			root->dir[root->fnode[ino].dir_no].size++;
+// 			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, pname);
+// 			break;
+// 		}
+// 	}
+// 	return SUCCESS;
+// }
 
 // 创建目录
 STATUS create_dir(char *path, char* pname)
 {
 	if( pname[0] == '/' ){
+		string str_path = pname;
 		
 	}
-	int ino = getnode(path);
-	if (ino == -1)
-	{
-		return ERR_PATH_FAIL;
-	}
-	int n_ino;
-	int d_ino ;
-	// 申请新目录
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (root->dir[i].size == 0)
-		{
-			root->dir[i].size = 1;
-			d_ino = i;
-			break;
-			//root->dir[i].direct[0].d_ino = n_ino;
+	else{
+		if(check_file_exist(getnode(path),pname)){
+			cout<<"File already exist!"<<endl;
+			return ERR;
 		}
-	}
-	//申请请finode节点
-	for (int i = 0; i < NUM; i++)
-		if (root->fnode[i].fi_nlink != 1)
+		int ino = getnode(path);
+		if (ino == -1)
 		{
-			n_ino = i;
-			root->fnode[i].fi_mode = DIRMODE;
-			root->fnode[i].fi_size = 0;
-			root->fnode[i].dir_no = d_ino;
-			root->fnode[i].fi_addr[0] = 0;
-			root->fnode[i].fi_nlink = 1;
-			break;
+			return ERR_PATH_FAIL;
 		}
-	// 在父亲节点建立指针
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) == 0)
+		int n_ino;
+		int d_ino ;
+		// 申请新目录
+		for (int i = 0; i < DIRNUM; i++)
 		{
-			root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
-			root->dir[root->fnode[ino].dir_no].size++;
-			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, pname);
-			break;
+			if (root->dir[i].size == 0)
+			{
+				root->dir[i].size = 1;
+				d_ino = i;
+				break;
+				//root->dir[i].direct[0].d_ino = n_ino;
+			}
 		}
+		//申请请finode节点
+		n_ino=add_new_fnode(DIRMODE);
+		// 在父亲节点建立指针
+		for (int i = 0; i < DIRSIZE; i++)
+		{
+			if (strlen(get_file_name(ino,i)) == 0)
+			{
+				root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino;
+				root->dir[root->fnode[ino].dir_no].size++;
+				strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, pname);
+				break;
+			}
+		}
+		return SUCCESS;
 	}
-	return SUCCESS;
 }
 
 STATUS cd(char *topath)
@@ -352,6 +354,8 @@ int rm_file(char *path, char *fname)
 		root->root.s_freeblock[block_addr] = 0 ;
 		root->root.s_freeblocksize++;
 	}
+	root->root.s_freeinodesize++;
+	root->root.s_freeinode[ino] = 0 ;
 	return SUCCESS;
 }
 

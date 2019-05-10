@@ -102,7 +102,9 @@ void init_new_fnode(int i, int mode){
 
 int add_new_fnode(int mode){
 	for (int i = 0; i < NUM; i++){
-		if (root->fnode[i].fi_nlink != 1) {
+		if (root->root.s_freeinode[i]==0) {
+			root->root.s_freeinode[i] = 1 ;
+			root->root.s_freeinodesize--;
 			init_new_fnode(i, mode);
 			return i;
 		}	
