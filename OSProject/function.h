@@ -1,4 +1,7 @@
-#pragma   once  
+#ifndef FUNCTION_H
+#define FUNCTION_H
+
+
 
 #include "util.h"
  
@@ -522,3 +525,6 @@ void init()
 	root->root.s_freeblocksize = BNUM;
 	strcpy(PATH, "/");
 }
+
+
+#endif // !FUNCTION_H

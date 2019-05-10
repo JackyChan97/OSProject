@@ -1,4 +1,6 @@
-#pragma once
+#ifndef DIFINE_H
+#define DIFINE_H
+
 #define NUM 15360	//总节点数      15*1024
 #define BNUM 15360	//磁盘块数  15M
 #define BSIZE 1024 //块大小	           1024
@@ -71,3 +73,5 @@ extern char content[BSIZE*BNUM] ;
 // finode[31,930]
 // dir[931,1023]
 //free[1024,15*1024-1]
+
+#endif // !DIFINE_H

@@ -1,4 +1,6 @@
-#pragma   once  
+#ifndef UTIL_H
+#define UTIL_H
+
 
 #include<iostream>
 #include<iomanip>
@@ -201,5 +203,6 @@ void update_direct_name(int ino, int id, char *fname){
 	 }
  }
 
+#endif // !UTIL_H
 
 
