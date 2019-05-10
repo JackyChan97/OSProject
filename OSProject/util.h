@@ -92,7 +92,9 @@ bool check_file_exist(int ino, char* fname){
 	return 0;
 }
 
-void init_new_fnode(int i, int mode){
+void init_new_fnode(int i, int mode,int dir_no){
+	if(mode==DIRMODE)
+		root->fnode[i].dir_no = dir_no;
 	root->fnode[i].fi_mode = mode;
 	root->fnode[i].fi_size = 0;
 	root->fnode[i].fi_addr[0] = 0;
@@ -100,12 +102,12 @@ void init_new_fnode(int i, int mode){
 	root->fnode[i].double_addr = -1;
 }
 
-int add_new_fnode(int mode){
+int add_new_fnode(int mode,int dir_no){
 	for (int i = 0; i < NUM; i++){
-		if (root->root.s_freeinode[i]==0) {
+		if (root->root.s_freeinode[i]==0) {			
 			root->root.s_freeinode[i] = 1 ;
 			root->root.s_freeinodesize--;
-			init_new_fnode(i, mode);
+			init_new_fnode(i, mode,dir_no);
 			return i;
 		}	
 	}

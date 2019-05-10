@@ -15,7 +15,7 @@ STATUS touch(char *path, char* fname)
 		return ERR_PATH_FAIL;
 	}
 	
-	int n_ino = add_new_fnode(FILEMODE);
+	int n_ino = add_new_fnode(FILEMODE,-1);
 	add_file_to_direct(ino, n_ino, fname);
 	return SUCCESS;
 }
@@ -55,7 +55,7 @@ STATUS createFile(char *path, char* fname, int size_kb)
 		return ERR_FILE_EXIST;
 	}
 	
-	int n_ino = add_new_fnode(FILEMODE);
+	int n_ino = add_new_fnode(FILEMODE,-1);
 		
 	int direct_i = add_file_to_direct(ino, n_ino, fname);
 
@@ -167,7 +167,7 @@ STATUS create_dir(char *path, char* pname)
 			}
 		}
 		//申请请finode节点
-		n_ino=add_new_fnode(DIRMODE);
+		n_ino=add_new_fnode(DIRMODE,d_ino);
 		// 在父亲节点建立指针
 		for (int i = 0; i < DIRSIZE; i++)
 		{
@@ -254,12 +254,13 @@ STATUS cd(char *topath)
 STATUS ls(char *path)
 {
 	int ino = getnode(path);
+	cout<<"ino: "<<ino<<endl;
 	cout << setw(10) << "NAME" << setw(5) << "type" << setw(6) << "size" << endl;
 	for (int i = 0; i < DIRSIZE; i++)
 	{
-		if (strlen(root->dir[root->fnode[ino].dir_no].direct[i].d_name) != 0)
+		if (strlen(get_file_name(ino,i)) != 0)
 		{
-			cout << setw(10) << root->dir[root->fnode[ino].dir_no].direct[i].d_name;
+			cout << setw(10) << get_file_name(ino,i);
 			if (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_mode == DIRMODE)
 			{
 				cout << setw(5) << "DIR" << setw(6) << "-";
@@ -523,6 +524,7 @@ void init()
 	root->dir[0].size = 1;
 	strcpy(root->dir[0].direct[0].d_name, "/"); //设置根目录名
 	root->fnode[0].fi_mode = DIRMODE;
+	root->root.s_freeinode[0] = 1;
 	root->fnode[0].fi_nlink = 1;
 	root->fnode[0].dir_no = 1;//1
 	root->dir[1].size = 1;

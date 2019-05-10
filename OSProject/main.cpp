@@ -57,7 +57,7 @@ int main()
 		{
 			//cout << "mkdir";
 			cin >> arg1;
-			mkdir(PATH, arg1);
+			create_dir(PATH, arg1);
 			ls(PATH);
 		}
 		else if( s == "createDir"){
