@@ -72,6 +72,10 @@ int main()
 			cin >> arg1 >> size_kb;
 			createFile(PATH, arg1, size_kb); 
 		}
+		else if (s == "deleteFile"){
+			cin >> arg1;
+			rm_file(PATH, arg1);
+		}
 		else if (s == "touch")
 		{
 			cin >> arg1;

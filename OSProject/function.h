@@ -21,7 +21,6 @@ STATUS touch(char *path, char* fname)
 // 在指定目录下创建文件
 STATUS createFile(char *path, char* fname, int size_kb)
 {
-	cout << "what" << endl;
 	int block_num = size_kb*1024/BSIZE;
 	if( block_num < 0 ){
 		cout << "Error: file size can not small than zero" << endl;
@@ -37,7 +36,12 @@ STATUS createFile(char *path, char* fname, int size_kb)
 	if (ino == -1) {
 		return ERR_PATH_FAIL;
 	}
-	cout << "what" << endl;
+	
+	if( check_file_exist (ino, fname) ){
+		cout << "file name already exist!" << endl;
+		return ERR_FILE_EXIST;
+	}
+	
 	int n_ino = add_new_fnode(FILEMODE);
 		
 	int direct_i = add_file_to_direct(ino, n_ino, fname);
@@ -45,14 +49,12 @@ STATUS createFile(char *path, char* fname, int size_kb)
 	update_file_size(n_ino, fsize);
 	
 	int double_addr_block_id;
-	cout << "what" << endl;
 	if( block_num >= 10 ){
 		int k = find_free_block();
 		root->fnode[n_ino].double_addr = k;
 		double_addr_block_id = k;
 		root->root.s_freeblock[k] = 1;
 		root->root.s_freeblocksize--;
-		memset(root->free+k*BSIZE, 0, 1024);
 	}
 	
 	for(int j = 0; j < block_num; j++){
@@ -67,7 +69,6 @@ STATUS createFile(char *path, char* fname, int size_kb)
 		}
 		int start_addr = k * BSIZE;
 		int end = 1024;
-		cout << "start_addr " << start_addr << endl;
 		for ( int l = 0; l < end; l++){
 			root->free[start_addr+l] = 'a';	// random fill
 		}
@@ -262,31 +263,51 @@ STATUS mv(char *path, char *file, char *npath)
 			break;
 		}
 	}
-
 	return SUCCESS;
 }
 
 // 删除文件
-int rm(char *path, char *file)
+int rm_file(char *path, char *fname)
+{
+	int ino = getnode(path);
+	
+	if( !check_file_exist(ino, fname) ){
+		cout << "file not exist!" << endl;
+		return ERR_FILE_NOT_EXIST;
+	}
+	
+	int direct_i = get_file_direct_id_in_fnode(ino, fname);
+	update_direct_name(ino, direct_i, "");
+	root->dir[root->fnode[ino].dir_no].size--;
+
+	int fsize = get_file_size(ino, direct_i);
+	int remainder = fsize%BSIZE;
+	int block_num = fsize/BSIZE + (remainder ? 1:0);
+	
+	finode now_fnode = get_direct_fnode(ino, direct_i);
+	
+	for (int j = 0; j < block_num; j++)
+	{
+		int block_addr;
+		if( j < 10 ) block_addr = BSIZE*now_fnode.fi_addr[j] ;
+		else block_addr = get_double_addr_block_addr(now_fnode.double_addr,j-10);
+		root->root.s_freeblock[block_addr] = 0 ;
+		root->root.s_freeblocksize++;
+	}
+	return SUCCESS;
+}
+
+int rm(char *path, char *fname)
 {
 	int ino = getnode(path);
 
-	int n_ino;
+	int n_ino = get_file_direct_id_in_fnode(ino, fname);
 	//从目录中移除节点
-	for (int i = 0; i < DIRSIZE; i++)
-	{
-		if (strcmp(root->dir[root->fnode[ino].dir_no].direct[i].d_name, file) == 0)
-		{
-			strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, "");
-			n_ino = root->dir[root->fnode[ino].dir_no].direct[i].d_ino;
-			root->dir[root->fnode[ino].dir_no].size--;
-		}
-		else
-		{
-			cout << "Error: file is not exit" << endl;
-			return ERR_FILE_NOT_EXIST;
-		}
-	}
+	int direct_i = get_file_direct_id_in_fnode(ino, fname);
+	strcpy(root->dir[root->fnode[ino].dir_no].direct[direct_i].d_name, "");
+	n_ino = root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino;
+	root->dir[root->fnode[ino].dir_no].size--;
+
 	for (int i = 0; i < 1 + (root->fnode[n_ino].fi_size / BSIZE); i++)
 	{
 		root->root.s_freeblock[root->fnode[n_ino].fi_addr[i]] = 0;
@@ -332,7 +353,7 @@ STATUS cat(char *path, char *fname)
 		// 确定有多少块
 		int fsize = get_file_size(ino, direct_i);
 		int remainder = fsize%BSIZE;
-		int block_num = remainder ? 1 + fsize/BSIZE : fsize/BSIZE;
+		int block_num = fsize/BSIZE + (remainder ? 1:0);
 		
 		finode now_fnode = get_direct_fnode(ino, direct_i);
 		
@@ -346,7 +367,6 @@ STATUS cat(char *path, char *fname)
 			for (int k = 0; k < end; k++){
 				cout << root->free[start_addr+k];
 			}
-			cout << "j " << j << " start_addr " << start_addr << "  end " << end << endl;
 		}
 	}
 	cout << endl;

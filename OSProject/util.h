@@ -77,6 +77,19 @@ int get_file_size(int ino, int i){
 	return root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size;
 }
 
+int get_file_direct_ino(int ino, int id){
+	return root->dir[root->fnode[ino].dir_no].direct[id].d_ino;
+}
+
+bool check_file_exist(int ino, char* fname){
+	for (int i = 0; i < DIRSIZE; i++) {
+		if (strcmp(get_file_name(ino, i), fname) == 0)	{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 void init_new_fnode(int i, int mode){
 	root->fnode[i].fi_mode = mode;
 	root->fnode[i].fi_size = 0;
@@ -105,6 +118,7 @@ int add_file_to_direct( int ino, int n_ino, char* fname){
 	for (int i = 0; i < DIRSIZE; i++) {
 		if (strlen(get_file_name(ino, i)) == 0)	{
 			init_file_to_direct(ino, i, n_ino, fname);
+			root->dir[root->fnode[ino].dir_no].size++;
 			return i;
 		}
 	}
@@ -145,7 +159,6 @@ int get_double_addr_block_addr( int id, int j){
 	return addr-1;
 }
 
-
 int get_file_direct_id_in_fnode( int ino, char *fname){
 	for (int i = 0; i < DIRSIZE; i++)
 	{
@@ -154,7 +167,7 @@ int get_file_direct_id_in_fnode( int ino, char *fname){
 			return i;
 		}
 	}
-	cout << "not exist " << fname << " in present direct"<< endl;
+	cout << "not exist " << fname << endl;
 	return -1;
 }
 
@@ -162,6 +175,9 @@ finode get_direct_fnode( int ino, int direct_i){
 	return root->fnode[root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino];
 }
 
+void update_direct_name(int ino, int id, char *fname){
+	strcpy(root->dir[root->fnode[ino].dir_no].direct[id].d_name, fname);
+}
 
 // 如果不存在返回-1 否则返回inodenumber
  int check_path_exist(char *topath){
