@@ -146,32 +146,35 @@ STATUS create_dir(char *path, char* pname)
 		}
 		char tpath[NAMESIZE*DIRNUM]="";
 		strcpy(tpath,pname);
-		cout<<"tpath:"<<tpath<<endl;
+		// cout<<"tpath:"<<tpath<<endl;
 		char* fpath = strtok(tpath,"/");
 		char tmp_path[NAMESIZE*DIRNUM]="";
 		char * index =NULL;
 		while(fpath != NULL){
 			char new_path[NAMESIZE*DIRNUM];
-			strcpy(new_path,tmp_path);
-			strcat(new_path,fpath);
+			
 			strcat(tmp_path,"/");
+			strcpy(new_path, tmp_path);
+			strcat(new_path, fpath);
+			index = fpath + strlen(fpath) + 1;
 			if(getnode(new_path)!=-1){
 				//cout<<"f"<<endl;
 				
 				strcat(tmp_path,fpath);
+				
 			}
 			else{
-				cout<<"y"<<endl;
-				index = fpath+strlen(fpath)+1;
+				// cout<<"y"<<endl;
 				create_dir(tmp_path,fpath);
-				cout<<"yy"<<endl;
-				cout<<"tmp_path:"<<tmp_path<<endl;
+				// cout<<"yy"<<endl;
+				// cout<<"tmp_path:"<<tmp_path<<endl;
 				strcat(tmp_path,fpath);
 			}
-			cout<<"fpath: "<<fpath<<endl;
 			fpath = strtok(index, "/");
-			if(fpath==NULL)
-				cout<<"hi"<<endl;
+			// cout<<"fpath: "<<fpath<<endl;
+			
+			// if(fpath==NULL)
+				// cout<<"hi"<<endl;
 		}
 
 		
@@ -399,26 +402,76 @@ int rm_file(char *path, char *fname)
 	return SUCCESS;
 }
 
-int rm(char *path, char *fname)
-{
-	int ino = getnode(path);
+// int rm(char *path, char *fname)
+// {
+// 	int ino = getnode(path);
 
-	int n_ino = get_file_direct_id_in_fnode(ino, fname);
-	//从目录中移除节点
-	int direct_i = get_file_direct_id_in_fnode(ino, fname);
-	strcpy(root->dir[root->fnode[ino].dir_no].direct[direct_i].d_name, "");
-	n_ino = root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino;
-	root->dir[root->fnode[ino].dir_no].size--;
+// 	int n_ino = get_file_direct_id_in_fnode(ino, fname);
+// 	//从目录中移除节点
+// 	int direct_i = get_file_direct_id_in_fnode(ino, fname);
+// 	strcpy(root->dir[root->fnode[ino].dir_no].direct[direct_i].d_name, "");
+// 	n_ino = root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino;
+// 	root->dir[root->fnode[ino].dir_no].size--;
 
-	for (int i = 0; i < 1 + (root->fnode[n_ino].fi_size / BSIZE); i++)
-	{
-		root->root.s_freeblock[root->fnode[n_ino].fi_addr[i]] = 0;
-		root->root.s_freeblocksize++;
+// 	for (int i = 0; i < 1 + (root->fnode[n_ino].fi_size / BSIZE); i++)
+// 	{
+// 		root->root.s_freeblock[root->fnode[n_ino].fi_addr[i]] = 0;
+// 		root->root.s_freeblocksize++;
+// 	}
+// 	root->fnode[n_ino].fi_nlink = 0;
+// 	return SUCCESS;
+// }
+int rm_dir(char *path, char *fname){
+	if(fname[0]=='/'){
+		if(!strncmp(path,fname,strlen(fname))){
+			cout<<"Can not delete current path!"<<endl;
+			return ERR;
+		}
+		int len =1;
+		for (int i =strlen(fname)-1;i>0;i--){
+			if(fname[i] =='/'){
+				len = i;
+				break;
+			}
+		}
+		char new_path[NAMESIZE*DIRNUM] ="";
+		char new_name[NAMESIZE*DIRNUM] ="";
+		strncpy(new_path,fname,len);
+		for(int i=len+1;i<strlen(fname);i++){
+			new_name[i-len-1]=fname[i];
+		}
+		rm_dir(new_path,new_name);
 	}
-	root->fnode[n_ino].fi_nlink = 0;
-	return SUCCESS;
+	else{
+		char tmp[NAMESIZE*DIRNUM]="";
+		if(strcmp(path,"/"))
+			strcpy(tmp,path);
+		strcat(tmp,"/");
+		strcat(tmp,fname);
+		int ino_of_dir=getnode(tmp);
+		if(ino_of_dir==-1){
+			cout<<"DIR do not exist!"<<endl;
+			return ERR_FILE_NOT_EXIST;
+		}
+		if(root->fnode[ino_of_dir].fi_mode!=DIRMODE){
+			cout<<"This is not a DIR"<<endl;
+			return ERR;
+		}
+		int dir_no = root->fnode[ino_of_dir].dir_no;
+		for(int i=0;i<DIRSIZE;i++){
+			if(strlen(root->dir[dir_no].direct[i].d_name)!=0){
+				int ino_of_inside = root->dir[dir_no].direct[i].d_ino;
+				if(root->fnode[ino_of_inside].fi_mode==FILEMODE)
+					rm_file(tmp,root->dir[dir_no].direct[i].d_name);
+				else{
+					rm_dir(tmp,root->dir[dir_no].direct[i].d_name);
+				}
+			}
+		}
+		int ino = getnode(path);
+		rm_file(path,fname);
+	}
 }
-
 // 查询空闲空间
 STATUS free()
 {

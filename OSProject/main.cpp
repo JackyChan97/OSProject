@@ -85,10 +85,10 @@ int main()
 			touch(PATH, arg1);
 			//ls(PATH);
 		}
-		else if (s == "rm")
+		else if (s == "deleteDir")
 		{
 			cin >> arg1;
-			rm(PATH, arg1);
+			rm_dir(PATH, arg1);
 			//ls(PATH);
 		}
 		else if (s == "mv")
