@@ -140,12 +140,45 @@ STATUS createFile(char *path, char* fname, int size_kb)
 STATUS create_dir(char *path, char* pname)
 {
 	if( pname[0] == '/' ){
-		string str_path = pname;
+		if(getnode(pname)!=-1){
+			cout<<"DIR already exist!"<<endl;
+			return ERR;
+		}
+		char tpath[NAMESIZE*DIRNUM]="";
+		strcpy(tpath,pname);
+		cout<<"tpath:"<<tpath<<endl;
+		char* fpath = strtok(tpath,"/");
+		char tmp_path[NAMESIZE*DIRNUM]="";
+		char * index =NULL;
+		while(fpath != NULL){
+			char new_path[NAMESIZE*DIRNUM];
+			strcpy(new_path,tmp_path);
+			strcat(new_path,fpath);
+			strcat(tmp_path,"/");
+			if(getnode(new_path)!=-1){
+				//cout<<"f"<<endl;
+				
+				strcat(tmp_path,fpath);
+			}
+			else{
+				cout<<"y"<<endl;
+				index = fpath+strlen(fpath)+1;
+				create_dir(tmp_path,fpath);
+				cout<<"yy"<<endl;
+				cout<<"tmp_path:"<<tmp_path<<endl;
+				strcat(tmp_path,fpath);
+			}
+			cout<<"fpath: "<<fpath<<endl;
+			fpath = strtok(index, "/");
+			if(fpath==NULL)
+				cout<<"hi"<<endl;
+		}
+
 		
 	}
 	else{
 		if(check_file_exist(getnode(path),pname)){
-			cout<<"File already exist!"<<endl;
+			cout<<"DIR already exist!"<<endl;
 			return ERR;
 		}
 		int ino = getnode(path);
@@ -254,8 +287,8 @@ STATUS cd(char *topath)
 STATUS ls(char *path)
 {
 	int ino = getnode(path);
-	cout<<"ino: "<<ino<<endl;
-	cout << setw(10) << "NAME" << setw(5) << "type" << setw(6) << "size" << endl;
+	//cout<<"ino: "<<ino<<endl;
+	cout << setw(10) << "NAME" << setw(5) << "type" << setw(6) << "size" <<setw(23) <<"CreatedTime"<<endl;
 	for (int i = 0; i < DIRSIZE; i++)
 	{
 		if (strlen(get_file_name(ino,i)) != 0)
@@ -263,12 +296,17 @@ STATUS ls(char *path)
 			cout << setw(10) << get_file_name(ino,i);
 			if (root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_mode == DIRMODE)
 			{
-				cout << setw(5) << "DIR" << setw(6) << "-";
+				char tmp[30];
+				strftime(tmp,sizeof(tmp),"%Y-%m-%d %H:%M:%S",localtime(&(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].createdTime)));
+				cout << setw(5) << "DIR" << setw(6) << "-"<<setw(23)<<tmp;
+				
 
 			}
 			else
 			{
-				cout << setw(5) << "FILE" << setw(6) << root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size;
+				char str_time[20];
+				strftime(str_time,sizeof(str_time),"%Y-%m-%d %H:%M:%S",localtime(&(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].createdTime)));
+				cout << setw(5) << "FILE" << setw(6) << root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size<<setw(23)<<str_time;
 			}
 			cout << endl;
 		}
@@ -338,7 +376,8 @@ int rm_file(char *path, char *fname)
 	}
 	
 	int direct_i = get_file_direct_id_in_fnode(ino, fname);
-	update_direct_name(ino, direct_i, "");
+	char name[NAMESIZE*DIRNUM] = "";
+	update_direct_name(ino, direct_i, name);
 	root->dir[root->fnode[ino].dir_no].size--;
 
 	int fsize = get_file_size(ino, direct_i);

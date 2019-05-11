@@ -100,6 +100,8 @@ void init_new_fnode(int i, int mode,int dir_no){
 	root->fnode[i].fi_addr[0] = 0;
 	root->fnode[i].fi_nlink = 1;
 	root->fnode[i].double_addr = -1;
+	root->fnode[i].createdTime = time(NULL);
+	//cout<<root->fnode[i].createdTime<<endl;
 }
 
 int add_new_fnode(int mode,int dir_no){

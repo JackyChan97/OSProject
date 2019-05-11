@@ -60,10 +60,10 @@ int main()
 			create_dir(PATH, arg1);
 			ls(PATH);
 		}
-		else if( s == "createDir"){
-			cin >> arg1;
-			create_dir(PATH, arg1);
-		}
+		// else if( s == "createDir"){
+		// 	cin >> arg1;
+		// 	create_dir(PATH, arg1);
+		// }
 		else if (s == "format")
 		{
 			memset(root, '\0', sizeof(struct storage));
