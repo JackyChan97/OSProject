@@ -48,12 +48,12 @@ int main()
 	string s;
 	char arg1[NAMESIZE] = "";
 	char arg2[NAMESIZE] = "";
-	
+	memset(root, '\0', sizeof(struct storage));
 	init();
 	while (1)
 	{
 		cin >> s;
-		if (s == "mkdir")
+		if (s == "createDir")
 		{
 			//cout << "mkdir";
 			cin >> arg1;

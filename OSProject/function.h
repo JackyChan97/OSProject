@@ -697,6 +697,7 @@ void init()
 	root->fnode[0].dir_no = 1;//1
 	root->dir[1].size = 1;
 	root->root.s_freeblocksize = BNUM;
+	root->root.s_freeinodesize = NUM - 1;
 	strcpy(PATH, "/");
 }
 

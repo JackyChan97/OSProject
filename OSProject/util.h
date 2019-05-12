@@ -119,12 +119,13 @@ int add_new_fnode(int mode,int dir_no){
 
 int copy_inode(finode old_i) {
 	for (int i = 0; i < NUM; i++) {
-		if (root->fnode[i].fi_nlink != 1) {
+		if (root->root.s_freeinode[i]==0) {
 			root->fnode[i].fi_mode = old_i.fi_mode;
 			root->fnode[i].fi_size = old_i.fi_size;
 			root->fnode[i].fi_addr[0] = 0;
 			root->fnode[i].fi_nlink = 1;
 			root->fnode[i].double_addr = -1;
+			root->fnode[i].createdTime = time(NULL);
 			return i;
 		}
 	}
