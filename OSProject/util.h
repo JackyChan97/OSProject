@@ -117,6 +117,19 @@ int add_new_fnode(int mode,int dir_no){
 	return -1;
 }
 
+int copy_inode(finode old_i) {
+	for (int i = 0; i < NUM; i++) {
+		if (root->fnode[i].fi_nlink != 1) {
+			root->fnode[i].fi_mode = old_i.fi_mode;
+			root->fnode[i].fi_size = old_i.fi_size;
+			root->fnode[i].fi_addr[0] = 0;
+			root->fnode[i].fi_nlink = 1;
+			root->fnode[i].double_addr = -1;
+			return i;
+		}
+	}
+}
+
 void init_file_to_direct(int ino, int i, int n_ino, char* fname){
 	root->dir[root->fnode[ino].dir_no].direct[i].d_ino = n_ino ;
 	strcpy(root->dir[root->fnode[ino].dir_no].direct[i].d_name, fname);

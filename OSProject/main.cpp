@@ -1,4 +1,4 @@
-
+#define _CRT_SECURE_NO_WARNINGS
 
 #include"function.h"
 
@@ -148,6 +148,13 @@ int main()
 		else if (s == "free")
 		{
 			free();
+		}
+		else if (s == "cp") {
+			cin >> arg1 >> arg2;
+			cp(PATH, arg1, arg2);
+		}
+		else if (s == "sum") {
+			sum();
 		}
 		else
 		{

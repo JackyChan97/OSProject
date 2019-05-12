@@ -572,6 +572,82 @@ STATUS vi(char *path, char *file, char *cont)
 	return SUCCESS;
 }
 
+STATUS cp(char *path, char* fname1, char* fname2)
+{
+	int ino = getnode(path);
+	if (ino == -1) {
+		return ERR_PATH_FAIL;
+	}
+	int old_direct_i = get_file_direct_id_in_fnode(ino, fname1);
+	if (get_file_mode(ino, old_direct_i) == DIRMODE)
+	{
+		cout << "This is a dir" << endl;
+		return ERR_FILE_FAIL;
+	}
+	int fsize = get_file_size(ino, old_direct_i);
+
+	if (check_file_exist(ino, fname2)) {
+		cout << "file name already exist!" << endl;
+		return ERR_FILE_EXIST;
+	}
+	int block_num;
+	if (fsize >= 1024)
+		block_num = fsize / 1024 ;
+	else
+		block_num = 1;
+	
+	finode old_fnode = get_direct_fnode(ino, old_direct_i);
+
+	int n_ino = copy_inode(old_fnode);
+
+
+	int direct_i = add_file_to_direct(ino, n_ino, fname2);
+
+	int double_addr_block_id;
+	if (block_num >= 10) {
+		int k = find_free_block();
+		root->fnode[n_ino].double_addr = k;
+		double_addr_block_id = k;
+		root->root.s_freeblock[k] = 1;
+		root->root.s_freeblocksize--;
+	}
+
+	for (int j = 0; j < block_num; j++) {
+		int k = find_free_block();
+		root->root.s_freeblock[k] = 1;
+		root->root.s_freeblocksize--;
+		if (j < 10) {
+			root->fnode[n_ino].fi_addr[j] = k;
+		}
+		else {
+			update_addr_in_double_addr_block(double_addr_block_id, j - 10, k);
+		}
+		int start_addr = k * BSIZE;
+		int old_start_addr;
+		if (j < 10)  old_start_addr = BSIZE*old_fnode.fi_addr[j];
+		else old_start_addr = BSIZE*get_double_addr_block_addr(old_fnode.double_addr, j - 10);
+		int end = 1024;
+		for (int l = 0; l < end; l++) {
+			char tmp = root->free[old_start_addr + l];
+			root->free[start_addr + l] = tmp;
+		}
+	}
+	return SUCCESS;
+}
+
+STATUS sum() {
+	int used = 0;
+	int unused = 0;
+	for (int i = 0; i < BNUM; i++) {
+		if (root->root.s_freeblock[i] == 1)
+			used++;
+	}
+	unused = BNUM - used;
+	cout << "Number of used blocks :" << used << endl;
+	cout << "Number of unused blocks :" << unused << endl;
+	return SUCCESS;
+}
+
 // Ð´³öÎÄ¼þ
 STATUS writeout()
 {
