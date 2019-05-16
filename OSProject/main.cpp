@@ -13,7 +13,7 @@ void menu()
 	cout << "*****************************************************************************" << endl;
 	cout << "*                   information of our groups                               *" << endl;
 	cout << "*                 Zheng BinXiong : 201630588474                             *" << endl;
-	cout << "*                 Chen ZhuoJie   : 201630588474                             *" << endl;
+	cout << "*                 Chen ZhuoJie   : 201630588245                             *" << endl;
 	cout << "*                 Ye RuiZhi      : 201630588450                             *" << endl; 
 	cout << "*****************************************************************************" << endl;
 	cout << "*****************************************************************************" << endl;
@@ -55,15 +55,10 @@ int main()
 		cin >> s;
 		if (s == "createDir")
 		{
-			//cout << "mkdir";
 			cin >> arg1;
 			create_dir(PATH, arg1);
 			ls(PATH);
 		}
-		// else if( s == "createDir"){
-		// 	cin >> arg1;
-		// 	create_dir(PATH, arg1);
-		// }
 		else if (s == "format")
 		{
 			memset(root, '\0', sizeof(struct storage));
@@ -79,42 +74,15 @@ int main()
 			cin >> arg1;
 			rm_file(PATH, arg1);
 		}
-		else if (s == "touch")
-		{
-			cin >> arg1;
-			touch(PATH, arg1);
-			//ls(PATH);
-		}
 		else if (s == "deleteDir")
 		{
 			cin >> arg1;
 			rm_dir(PATH, arg1);
-			//ls(PATH);
-		}
-		else if (s == "mv")
-		{
-			cin >> arg1 >> arg2;
-			mv(PATH, arg1, arg2);
-			//ls(PATH);
-		}
-		else if (s == "rename")
-		{
-			cin >> arg1 >> arg2;
-			rename(PATH, arg1, arg2);
-			//ls(PATH);
 		}
 		else if (s == "cat")
 		{
 			cin >> arg1;
 			cat(PATH, arg1);
-			//ls(PATH);
-		}
-		else if (s == "vi")
-		{
-			cin >> arg1;
-			cout << endl << "Please input the content of the file:" << endl;
-			cin >> content;
-			vi(PATH, arg1, content);
 			//ls(PATH);
 		}
 		else if (s == "cd")

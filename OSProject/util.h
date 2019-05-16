@@ -8,6 +8,7 @@
 #include<conio.h>
 #include<cstring>
 #include<cstdio>
+#include<stdlib.h>
 
 #include "define.h"
 
@@ -40,14 +41,10 @@ int getnode(char *path)
 			{
 				if (!strncmp(fpath, cdir.direct[i].d_name, strlen(fpath)))
 				{
-
-					//cout << cdir.direct[i].d_name << endl;
 					if (root->fnode[cdir.direct[i].d_ino].fi_mode == DIRMODE)
-					{
-						
+					{	
 						ino = cdir.direct[i].d_ino;
 						cdir = root->dir[root->fnode[ino].dir_no];
-
 						match = 1;
 						break;
 					}
@@ -117,6 +114,16 @@ int add_new_fnode(int mode,int dir_no){
 	return -1;
 }
 
+int add_new_direct(){
+	for (int i = 0; i < DIRNUM; i++){
+		if (root->dir[i].size == 0)
+		{
+			root->dir[i].size = 1;
+			return i;
+		}
+	}
+}
+
 int copy_inode(finode old_i) {
 	for (int i = 0; i < NUM; i++) {
 		if (root->root.s_freeinode[i]==0) {
@@ -166,7 +173,6 @@ int get_double_addr_block_id( int ino ){
 void update_addr_in_double_addr_block(int id, int pos, int addr){ 
 	// id is block_addr, pos in addr_block
 	// 3 char as a 24-bits address
-	addr += 1 ;
 	root->free[id*BSIZE+pos*3+2] = addr%2^8;
 	addr = addr/2^8;
 	root->free[id*BSIZE+pos*3+1] = addr%2^8;
@@ -178,7 +184,7 @@ int get_double_addr_block_addr( int id, int j){
 	int addr = int(root->free[id*BSIZE+j*3]);
 	addr = addr*2^8 + int(root->free[id*BSIZE+j*3+1]);
 	addr = addr*2^8 + int(root->free[id*BSIZE+j*3+2]);
-	return addr-1;
+	return addr;
 }
 
 int get_file_direct_id_in_fnode( int ino, char *fname){
@@ -193,12 +199,21 @@ int get_file_direct_id_in_fnode( int ino, char *fname){
 	return -1;
 }
 
-finode get_direct_fnode( int ino, int direct_i){
-	return root->fnode[root->dir[root->fnode[ino].dir_no].direct[direct_i].d_ino];
-}
-
 void update_direct_name(int ino, int id, char *fname){
 	strcpy(root->dir[root->fnode[ino].dir_no].direct[id].d_name, fname);
+}
+
+finode get_direct_fnode( int ino, int direct_i ){
+	int n_ino = get_file_direct_ino(ino, direct_i);
+	return root->fnode[n_ino];
+}
+
+finode delete_direct_fnode( int ino, int direct_i){
+	int n_ino = get_file_direct_ino(ino, direct_i);
+	root->fnode[n_ino].fi_nlink = 0;
+	root->root.s_freeinodesize++;
+	root->root.s_freeinode[n_ino] = 0 ;
+	return root->fnode[n_ino];
 }
 
 // 如果不存在返回-1 否则返回inodenumber
