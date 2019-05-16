@@ -260,15 +260,18 @@ int rm_dir(char *path, char *fname){
 			return ERR;
 		}
 		int len =1;
-		for (int i =strlen(fname)-1;i>0;i--){
+		for (int i =strlen(fname)-1;i>=0;i--){
 			if(fname[i] =='/'){
 				len = i;
 				break;
 			}
 		}
+		
 		char new_path[NAMESIZE*DIRNUM] ="";
 		char new_name[NAMESIZE*DIRNUM] ="";
 		strncpy(new_path,fname,len);
+		if(!strcmp(path,"/"))
+			strcpy(new_path,"/");
 		for(int i=len+1;i<strlen(fname);i++){
 			new_name[i-len-1]=fname[i];
 		}
@@ -278,7 +281,8 @@ int rm_dir(char *path, char *fname){
 		char tmp[NAMESIZE*DIRNUM]="";
 		if(strcmp(path,"/"))
 			strcpy(tmp,path);
-		strcat(tmp,"/");
+		else
+			strcat(tmp,"/");
 		strcat(tmp,fname);
 		int ino_of_dir=getnode(tmp);
 		if(ino_of_dir==-1){

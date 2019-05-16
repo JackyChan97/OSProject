@@ -26,7 +26,7 @@ struct superblock
 	unsigned int s_itsize;	//inode表大小
 	unsigned int s_freeinodesize;	//空闲i节点的数量
 	unsigned int s_nextfreeinode;	//下一个空闲i节点
-	bool s_freeinode[NUM];	//空闲i节点数组 0/1
+	bool s_freeinode[NUM];	 //空闲i节点数组 0/1
 	unsigned int s_freeblocksize;	//空闲块的数量          
 	unsigned int s_nextfreeblock;	//下一个空闲块
 	bool s_freeblock[BNUM];	//空闲块数组0/1  
