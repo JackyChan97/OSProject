@@ -66,15 +66,18 @@ int main()
 			int size_kb;
 			cin >> arg1 >> size_kb;
 			createFile(PATH, arg1, size_kb); 
+			ls(PATH);
 		}
 		else if (s == "deleteFile"){
 			cin >> arg1;
 			rm_file(PATH, arg1);
+			ls(PATH);
 		}
 		else if (s == "deleteDir")
 		{
 			cin >> arg1;
 			rm_dir(PATH, arg1);
+			ls(PATH);
 		}
 		else if (s == "cat")
 		{
