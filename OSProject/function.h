@@ -400,13 +400,14 @@ STATUS cp(char *path, char* fname1, char* fname2)
 }
 
 STATUS sum() {
-	int used = 0;
+	double used = 0;
 	int unused = 0;
 	for (int i = 0; i < BNUM; i++) {
 		if (root->root.s_freeblock[i] == 1)
 			used++;
 	}
 	unused = BNUM - used;
+	cout << "The usage of storage space: " << used / 1024 + 1 << "MB" << endl;
 	cout << "Number of used blocks :" << used << endl;
 	cout << "Number of unused blocks :" << unused << endl;
 	return SUCCESS;
