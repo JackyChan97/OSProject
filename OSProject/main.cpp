@@ -8,43 +8,41 @@ storage*root = new storage;
 char PATH[NAMESIZE*DIRNUM]="";
 char content[BSIZE*BNUM]="";
 
-void menu()
-{
+void copyright(){
 	cout << "*****************************************************************************" << endl;
 	cout << "*                   information of our groups                               *" << endl;
 	cout << "*                 Zheng BinXiong : 201630588474                             *" << endl;
 	cout << "*                 Chen ZhuoJie   : 201630588245                             *" << endl;
 	cout << "*                 Ye RuiZhi      : 201630588450                             *" << endl; 
 	cout << "*****************************************************************************" << endl;
+
+}
+
+void help(){
 	cout << "*****************************************************************************" << endl;
 	cout << "*                             OS-Operation Guide                            *" << endl;
 	cout << "*                                                                           *" << endl;
-	cout << "*                  1. mkdir <dir>  --create dir                             *" << endl;
-	cout << "*                  2. touch <file>  --create file                           *" << endl;
-	cout << "*                  3. cat <file>  --read file                               *" << endl;
-	cout << "*                  4. vi <file>   --edit file                               *" << endl;
-	cout << "*                  5. rm <file>  --delete dir/file                          *" << endl;
-	cout << "*                  6. rename <src> <dest>  --rename                         *" << endl;
-	cout << "*                  7. mv <file> <dir>  --move dir/file                      *" << endl;
-	cout << "*                  8. cd <dir>  --enter dir                                 *" << endl;
-	cout << "*                  9. cd ..  --return parent's dir                          *" << endl;
-	cout << "*                  10.pwd  --show present path                              *" << endl;
-	cout << "*                  11.ls  --list present dir's file                         *" << endl;
-	cout << "*                  12.free  --show free space of disk                       *" << endl;
-	cout << "*                  13.writeout  --write to disk                             *" << endl;
-	cout << "*                  14.readin  --read os from disk                           *" << endl;
-	cout << "*                  15.format  --format the disk                             *" << endl;
-	cout << "*                  16.help  --show help information                         *" << endl;
-	cout << "*                  17.exit  --exit the os                                   *" << endl;
-	cout << "*                  18. createFile                                           *" << endl;
+	cout << "*                  1. copyright                                             *" << endl;
+	cout << "*                  2. createFile <file> <size> --Create a file              *" << endl;
+	cout << "*                  3. deleteFile <file>  --Delete a file                    *" << endl;
+	cout << "*                  4. createDir <dir>   --Create a directory                *" << endl;
+	cout << "*                  5. deleteDir <dir>  --Delete a directory                 *" << endl;
+	cout << "*                  6. cd <src> --Change current working direcotry           *" << endl;
+	cout << "*                  7. dir <src> --List all the files and sub-directories    *" << endl;
+	cout << "*                  8. cp <file1> <file2> --Copy a file                      *" << endl;
+	cout << "*                  9. sum --Display the usage of storage space              *" << endl;
+	cout << "*                  10.cat <file> --Print out the file contents              *" << endl;
+	cout << "*                  11.readin  --Read from disk                              *" << endl;
+	cout << "*                  12.writeout  --Save to disk                              *" << endl;
+	cout << "*                  13.format  --Format the system                           *" << endl;
+	cout << "*                  14.help                                                  *" << endl;
 	cout << "*****************************************************************************" << endl;
 }
 
-
-
 int main()
 {
-	menu();
+	copyright();
+	help();
 	string s;
 	char arg1[NAMESIZE] = "";
 	char arg2[NAMESIZE] = "";
@@ -83,19 +81,17 @@ int main()
 		{
 			cin >> arg1;
 			cat(PATH, arg1);
-			//ls(PATH);
 		}
 		else if (s == "cd")
 		{
 			cin >> arg1;
 			cd(arg1);
-			//ls(PATH);
 		}
 		else if (s == "pwd")
 		{
 			cout << PATH << endl;
 		}
-		else if (s == "ls")
+		else if (s == "dir")
 		{
 			ls(PATH);
 		}
@@ -109,25 +105,30 @@ int main()
 			readin();
 			cout << "success read os from filesystem.dat" << endl;
 		}
+		else if (s == "cp") 
+		{
+			cin >> arg1 >> arg2;
+			cp(PATH, arg1, arg2);
+		}
+		else if (s == "sum") 
+		{
+			sum();
+		}
+		else if (s == "help" )
+		{
+			help();	
+		}
+		else if(s == "copyright" )
+		{
+			copyright();
+		}
 		else if (s == "exit")
 		{
 			break;
 		}
-		else if (s == "free")
-		{
-			free();
-		}
-		else if (s == "cp") {
-			cin >> arg1 >> arg2;
-			cp(PATH, arg1, arg2);
-		}
-		else if (s == "sum") {
-			sum();
-		}
-		else
-		{
+		else{
 			cout << "order is no exit! Please try again!" << endl;
-		}
+		}	
 	}
 	return 0;
 }

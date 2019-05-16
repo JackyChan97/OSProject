@@ -68,7 +68,6 @@ STATUS createFile(char *path, char* fname, int size_kb)
 	}
 
 	int fsize = block_num*1024;
-	
 	char create_path[NAMESIZE*DIRNUM]="/";
 	char create_fname[NAMESIZE] = "";
 	if( fname[0] == '/' ){
@@ -97,9 +96,7 @@ STATUS createFile(char *path, char* fname, int size_kb)
 	}
 	
 	int n_ino = add_new_fnode(FILEMODE,-1);
-		
 	int direct_i = add_file_to_direct(ino, n_ino, create_fname);
-
 	update_file_size(n_ino, fsize);
 	
 	int double_addr_block_id;
@@ -180,8 +177,7 @@ STATUS cd(char *topath)
 STATUS ls(char *path)
 {
 	int ino = getnode(path);
-	//cout<<"ino: "<<ino<<endl;
-	cout << setw(10) << "NAME" << setw(5) << "type" << setw(6) << "size" <<setw(23) <<"CreatedTime"<<endl;
+	cout << setw(10) << "NAME" << setw(5) << "type" << setw(10) << "size" <<setw(23) <<"CreatedTime"<<endl;
 	for (int i = 0; i < DIRSIZE; i++)
 	{
 		if (strlen(get_file_name(ino,i)) != 0)
@@ -191,13 +187,13 @@ STATUS ls(char *path)
 			{
 				char tmp[30];
 				strftime(tmp,sizeof(tmp),"%Y-%m-%d %H:%M:%S",localtime(&(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].createdTime)));
-				cout << setw(5) << "DIR" << setw(6) << "-"<<setw(23)<<tmp;
+				cout << setw(5) << "DIR" << setw(10) << "-"<<setw(23)<<tmp;
 			}
 			else
 			{
 				char str_time[20];
 				strftime(str_time,sizeof(str_time),"%Y-%m-%d %H:%M:%S",localtime(&(root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].createdTime)));
-				cout << setw(5) << "FILE" << setw(6) << root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size<<setw(23)<<str_time;
+				cout << setw(5) << "FILE" << setw(10) << root->fnode[root->dir[root->fnode[ino].dir_no].direct[i].d_ino].fi_size<<setw(23)<<str_time;
 			}
 			cout << endl;
 		}
@@ -308,32 +304,12 @@ int rm_dir(char *path, char *fname){
 		rm_file(path,fname);
 	}
 }
-// 查询空闲空间
-STATUS free()
-{
-	cout << "[";
-	int l = (int)40.0*(1.0*root->root.s_freeblocksize / BNUM);
-
-	for (int i = 0; i < 40 - l; i++)
-	{
-		cout << "=";
-	}
-	for (int i = 0; i < l; i++)
-	{
-		cout << " ";
-	}
-	cout << "] ";
-	cout << (int)(100.0*root->root.s_freeblocksize / BNUM) << "% free" << endl;
-	return SUCCESS;
-}
 
 //读文件
 STATUS cat(char *path, char *fname)
 {
 	int ino = getnode(path);
-	
-	int direct_i = get_file_direct_id_in_fnode(ino, fname);
-	
+	int direct_i = get_file_direct_id_in_fnode(ino, fname);	
 	if ( get_file_mode(ino, direct_i) == DIRMODE)
 	{
 		cout << "This is a dir" << endl;
@@ -388,13 +364,10 @@ STATUS cp(char *path, char* fname1, char* fname2)
 		block_num = 1;
 	
 	finode old_fnode = get_direct_fnode(ino, old_direct_i);
-
 	int n_ino = copy_inode(old_fnode);
-
-
 	int direct_i = add_file_to_direct(ino, n_ino, fname2);
-
 	int double_addr_block_id;
+	
 	if (block_num >= 10) {
 		int k = find_free_block();
 		root->fnode[n_ino].double_addr = k;
@@ -460,7 +433,6 @@ STATUS writeout()
 //读取文件
 STATUS readin()
 {
-
 	FILE *fp;
 	if ((fp = fopen("filesystem.dat", "r")) == NULL)
 	{
